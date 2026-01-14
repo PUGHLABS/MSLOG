@@ -4,6 +4,7 @@
 
 body {
   /* Standard color name */
+  /*background-image: url(LOGO.png);*/
   background-color: rgba(8, 61, 79, 0.405);
 
   * {
@@ -78,4 +79,64 @@ body {
     .nav-list li {
       padding: 15px 0;
     }
+
+    .blog-container {
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .blog-card {
+      width: 100%;
+      max-width: 400px;
+      /* Limits how wide the box gets */
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      /* Keeps the image corners rounded */
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      /* Adds the soft shadow */
+      transition: transform 0.3s ease;
+    }
+
+    /* Optional: Makes the box lift slightly when you hover over it */
+    .blog-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .blog-image {
+      height: 200px;
+      background-color: #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+    }
+
+    .blog-content {
+      padding: 20px;
+    }
+
+    .blog-content h2 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .blog-content p {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .read-more {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #4A90E2;
+      /* Matches the navbar color we used */
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
   }
