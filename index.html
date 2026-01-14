@@ -4,42 +4,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <link rel="stylesheet" href="style.css">
+  <title>My Single Page Site</title>
+  <style>
+    /* 1. SMOOTH SCROLLING */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* 2. NAVIGATION STYLES */
+    nav {
+      position: fixed;
+      /* Keeps menu at the top */
+      top: 0;
+      width: 100%;
+      background: #333;
+      color: white;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+    }
+
+    .nav-links li a {
+      color: white;
+      text-decoration: none;
+      padding: 15px 20px;
+      display: block;
+    }
+
+    /* 3. SECTION STYLES */
+    section {
+      min-height: 100vh;
+      /* Each section takes full screen height */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #home {
+      background-color: #f4f4f4;
+    }
+
+    #about {
+      background-color: #e2e2e2;
+    }
+
+    #photos {
+      background-color: #d1d1d1;
+    }
+
+    #contact {
+      background-color: #c0c0c0;
+    }
+
+    /* 4. HAMBURGER MENU (Mobile Only) */
+    .hamburger {
+      display: none;
+      cursor: pointer;
+      font-size: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+        /* Hide links on mobile initially */
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 50px;
+        left: 0;
+        background: #333;
+      }
+
+      .nav-links.active {
+        display: flex;
+      }
+
+      .hamburger {
+        display: block;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <nav class="navbar">
-    <div class="logo">Mount Spokane Land Owners Group</div>
 
-    <button class="menu-toggle" id="mobile-menu">
-      <span class="bar"></span>
-      <span class="bar"></span>
-      <span class="bar"></span>
-    </button>
-
-    <ul class="nav-list" id="nav-list">
-      <li><a href="#">Home</a></li>
-      <li><a href="#">About</a></li>
-      <li><a href="#">Drawings</a></li>
-      <li><a href="#">Gate Code</a></li>
-      <li><a href="#">Photos</a></li>
-      <li><a href="#">Roads/Culvert</a></li>
+  <nav>
+    <div class="logo">MyBrand</div>
+    <div class="hamburger" id="hamburger">☰</div>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#photos">Photos</a></li>
+      <li><a href="#contact">Contact</a></li>
     </ul>
   </nav>
-  <div class="blog-container">
-    <div class="blog-card">
-      <div class="blog-image">
-        <span></span>
-      </div>
-      <div class="blog-content">
-        <h2>post here</h2>
-        <p>This is a short description of my blog post. You can modify this text later to say whatever you want!</p>
-        <a href="#" class="read-more">Read More</a>
-      </div>
-    </div>
-  </div>
-  <script src="script.js"></script>
+
+  <section id="home">
+    <h1>Home Section</h1>
+    <p>Welcome to my single-page website!</p>
+  </section>
+
+  <section id="about">
+    <h1>About Me</h1>
+    <p>I am learning to build websites with Gemini.</p>
+  </section>
+
+  <section id="photos">
+    <h1>My Photos</h1>
+    <p>Gallery placeholder.</p>
+  </section>
+
+  <section id="contact">
+    <h1>Contact</h1>
+    <p>Get in touch with me here.</p>
+  </section>
+
+  <script>
+    // Logic to toggle hamburger menu
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('nav-links');
+
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
+
+    // Close menu when a link is clicked (important for mobile)
+    navLinks.addEventListener('click', () => {
+      navLinks.classList.remove('active');
+    });
+  </script>
+
 </body>
 
 </html>
