@@ -1,0 +1,81 @@
+/* Basic Reset */
+
+
+
+body {
+  /* Standard color name */
+  background-color: rgba(8, 61, 79, 0.405);
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+  }
+
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: #0a2246;
+    color: white;
+  }
+
+  .nav-list {
+    display: flex;
+    list-style: none;
+  }
+
+  .nav-list li a {
+    color: white;
+    text-decoration: none;
+    padding: 0 15px;
+  }
+
+  /* Hamburger Styling */
+  .menu-toggle {
+    display: none;
+    /* Hidden on desktop */
+    flex-direction: column;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+  }
+
+  .bar {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    margin: 4px 0;
+    transition: 0.4s;
+  }
+
+  /* Mobile View (Screens smaller than 768px) */
+  @media (max-width: 768px) {
+    .menu-toggle {
+      display: flex;
+    }
+
+    .nav-list {
+      display: none;
+      /* Hide menu items by default */
+      flex-direction: column;
+      width: 100%;
+      position: absolute;
+      top: 60px;
+      left: 0;
+      background: #4e98d4;
+      text-align: center;
+    }
+
+    .nav-list.active {
+      display: flex;
+    }
+
+    /* Show when active */
+
+    .nav-list li {
+      padding: 15px 0;
+    }
+  }
