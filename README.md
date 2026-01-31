@@ -1,1 +1,1 @@
-my readme
+CLAUDE: Add updates here
