@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — MSLOG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="hidden md:flex items-center">
+                <div class="flex items-center space-x-1">
+                    <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
+                    <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
+                        <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
+                        <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
+                        <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
+                        <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
+                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
+                        <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
+                        <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
+                    </div>
+                </div>
+                <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
+            </div>
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden">
+        <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
+            <a href="index.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <div id="nav-mobile-member" class="hidden">
+                <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
+                <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
+                <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
+                <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
+                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
+                <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
+                <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
+            </div>
+            <div id="nav-mobile-auth"></div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── LOGIN CARD ─── -->
+<main class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+
+            <!-- Header -->
+            <div class="page-header p-6 text-center">
+                <img src="images/logo1.png" alt="MSLOG" class="h-12 w-auto mx-auto mb-2 opacity-90">
+                <h1 class="text-white text-xl font-bold">Member Login</h1>
+                <p class="text-[#94A1B0] text-xs mt-1">Sign in with your credentials and lot number</p>
+            </div>
+
+            <!-- Form -->
+            <div class="p-6">
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="login-email" class="block text-sm font-medium text-[#063559] mb-1">Email Address</label>
+                        <input type="email" id="login-email" name="email" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div class="mb-4">
+                        <label for="login-pass" class="block text-sm font-medium text-[#063559] mb-1">Password</label>
+                        <input type="password" id="login-pass" name="password" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div class="mb-4">
+                        <label for="login-lot" class="block text-sm font-medium text-[#063559] mb-1">Lot Number</label>
+                        <input type="text" id="login-lot" name="lot" placeholder="58221.0137" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                        <p class="text-[#7E8994] text-xs mt-1">Format: nnnnn.nnnn — no letters</p>
+                    </div>
+                    <div class="flex items-center justify-between mb-5">
+                        <label class="flex items-center text-xs text-[#7E8994] cursor-pointer">
+                            <input type="checkbox" name="remember" class="mr-2 rounded">
+                            Remember Me
+                        </label>
+                        <a href="#" class="text-[#F9812A] text-xs hover:underline">Forgot Password?</a>
+                    </div>
+                    <p id="login-error" class="hidden text-red-600 text-xs bg-red-50 px-3 py-2 rounded mb-3" role="alert"></p>
+                    <button type="submit" class="btn-primary w-full px-6 py-2.5 rounded-lg font-semibold text-sm">Sign In</button>
+                </form>
+
+                <div class="mt-5 pt-5 border-t border-[#e2e8f0] text-center">
+                    <p class="text-[#7E8994] text-xs">Don't have an account? <a href="index.html#register" class="text-[#F9812A] hover:underline">Register here</a></p>
+                </div>
+
+                <!-- Demo credentials (dev helper) -->
+                <div class="mt-4 bg-[#f0f4f8] rounded-lg p-3">
+                    <p class="text-[#7E8994] text-xs font-semibold mb-1">Demo Credentials:</p>
+                    <p class="text-[#7E8994] text-xs">Admin  — admin@mslog.org / Admin123 / 58221.0137</p>
+                    <p class="text-[#7E8994] text-xs">Member — jane@mslog.org  / Member1  / 58221.0138</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
+

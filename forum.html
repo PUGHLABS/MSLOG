@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussion Forum — MSLOG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="hidden md:flex items-center">
+                <div class="flex items-center space-x-1">
+                    <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
+                    <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
+                        <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
+                        <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
+                        <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
+                        <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
+                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
+                        <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
+                        <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
+                    </div>
+                </div>
+                <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
+            </div>
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden">
+        <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
+            <a href="index.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <div id="nav-mobile-member" class="hidden">
+                <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
+                <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
+                <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
+                <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
+                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
+                <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
+                <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
+            </div>
+            <div id="nav-mobile-auth"></div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main class="flex-1 px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+
+        <!-- Header -->
+        <div class="page-header rounded-xl p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <h1 class="text-white text-2xl font-bold">Discussion Forum</h1>
+                <p class="text-[#94A1B0] text-sm mt-1">Community bulletin board and discussions</p>
+            </div>
+            <button onclick="document.getElementById('new-thread-panel').classList.toggle('hidden')" class="btn-primary px-4 py-2 rounded-lg font-semibold text-sm self-start sm:self-auto">+ New Thread</button>
+        </div>
+
+        <!-- New Thread Form (toggle) -->
+        <div id="new-thread-panel" class="hidden bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5 mb-5">
+            <h3 class="font-semibold text-[#063559] mb-3">Start a New Thread</h3>
+            <form id="new-thread-form">
+                <div class="mb-3">
+                    <label for="thread-title" class="block text-xs font-medium text-[#063559] mb-1">Title</label>
+                    <input type="text" id="thread-title" name="title" placeholder="What's on your mind?" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="mb-3">
+                    <label for="thread-body" class="block text-xs font-medium text-[#063559] mb-1">Message</label>
+                    <textarea id="thread-body" name="body" rows="3" placeholder="Share your thoughts…" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm resize-none"></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn-primary px-4 py-1.5 rounded-lg font-semibold text-sm">Post</button>
+                    <button type="button" onclick="document.getElementById('new-thread-panel').classList.add('hidden')" class="btn-secondary px-4 py-1.5 rounded-lg text-sm">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Thread List -->
+        <div id="thread-list" class="space-y-3">
+
+            <div class="thread-card bg-white rounded-lg p-4 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <h4 class="font-semibold text-[#063559]">February Work Party — Sign Up Here</h4>
+                    <span class="badge badge-new">New</span>
+                </div>
+                <p class="text-[#7E8994] text-xs mt-1">Posted by Robert Admin &mdash; Jan 28 &middot; 8 replies</p>
+                <p class="mt-2 text-sm text-[#64748b]">The Feb 12 work party is confirmed. We'll be clearing roads and doing general grounds maintenance. Please reply with your availability.</p>
+            </div>
+
+            <div class="thread-card bg-white rounded-lg p-4 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <h4 class="font-semibold text-[#063559]">January Meeting Agenda &amp; Zoom Link</h4>
+                </div>
+                <p class="text-[#7E8994] text-xs mt-1">Posted by Robert Admin &mdash; Jan 3 &middot; 3 replies</p>
+                <p class="mt-2 text-sm text-[#64748b]">Agenda for the January 8 meeting attached. Zoom link will be posted 24 hours before the meeting.</p>
+            </div>
+
+            <div class="thread-card bg-white rounded-lg p-4 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <h4 class="font-semibold text-[#063559]">Lot for Sale — 58221.0204</h4>
+                </div>
+                <p class="text-[#7E8994] text-xs mt-1">Posted by Jane Smith &mdash; Dec 20 &middot; 2 replies</p>
+                <p class="mt-2 text-sm text-[#64748b]">My neighbor is looking to sell their lot. Asking price is reasonable. Contact me if interested and I can pass along their info.</p>
+            </div>
+
+            <div class="thread-card bg-white rounded-lg p-4 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <h4 class="font-semibold text-[#063559]">Potluck Dish Sign-Up — Dec 26</h4>
+                </div>
+                <p class="text-[#7E8994] text-xs mt-1">Posted by Karen Thompson &mdash; Dec 10 &middot; 11 replies</p>
+                <p class="mt-2 text-sm text-[#64748b]">Please reply with what you plan to bring to avoid duplicates. Looking forward to seeing everyone!</p>
+            </div>
+
+            <div class="thread-card bg-white rounded-lg p-4 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <h4 class="font-semibold text-[#063559]">Road Condition Report — South Access</h4>
+                </div>
+                <p class="text-[#7E8994] text-xs mt-1">Posted by Tom Wilson &mdash; Dec 5 &middot; 5 replies</p>
+                <p class="mt-2 text-sm text-[#64748b]">The south access road has a pothole near the curve by lot 0188. Recommend we add it to the next work party list.</p>
+            </div>
+
+            <div class="thread-card bg-white rounded-lg p-4 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <h4 class="font-semibold text-[#063559]">New Member Welcome — Lisa Chen</h4>
+                </div>
+                <p class="text-[#7E8994] text-xs mt-1">Posted by Robert Admin &mdash; Nov 15 &middot; 4 replies</p>
+                <p class="mt-2 text-sm text-[#64748b]">Please welcome Lisa Chen to the community! She just purchased lot 58221.0201. Feel free to say hello.</p>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>requireAuth();</script>
+</body>
+</html>
+

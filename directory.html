@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Directory — MSLOG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="hidden md:flex items-center">
+                <div class="flex items-center space-x-1">
+                    <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
+                    <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
+                        <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
+                        <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
+                        <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
+                        <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
+                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
+                        <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
+                        <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
+                    </div>
+                </div>
+                <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
+            </div>
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden">
+        <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
+            <a href="index.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <div id="nav-mobile-member" class="hidden">
+                <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
+                <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
+                <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
+                <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
+                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
+                <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
+                <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
+            </div>
+            <div id="nav-mobile-auth"></div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main class="flex-1 px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <div class="page-header rounded-xl p-6 mb-6">
+            <h1 class="text-white text-2xl font-bold">Member Directory</h1>
+            <p class="text-[#94A1B0] text-sm mt-1">Search and browse all landowner members</p>
+        </div>
+
+        <!-- Search bar -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
+            <label for="dir-search" class="block text-sm font-medium text-[#063559] mb-2">Search Members</label>
+            <input type="search" id="dir-search" placeholder="Search by name, lot, email, or phone…" class="form-input w-full border border-[#94A1B0] rounded-lg px-4 py-2.5 text-sm">
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-x-auto">
+            <table class="data-table" id="dir-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Lot Number</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Robert Admin</td>
+                        <td>58221.0137</td>
+                        <td>admin@mslog.org</td>
+                        <td>(509) 555-0100</td>
+                        <td><span class="badge badge-admin">Admin</span></td>
+                    </tr>
+                    <tr>
+                        <td>Jane Smith</td>
+                        <td>58221.0138</td>
+                        <td>jane@mslog.org</td>
+                        <td>(509) 555-0101</td>
+                        <td><span class="badge badge-member">Member</span></td>
+                    </tr>
+                    <tr>
+                        <td>Tom Wilson</td>
+                        <td>58221.0142</td>
+                        <td>tom.wilson@email.com</td>
+                        <td>(509) 555-0110</td>
+                        <td><span class="badge badge-member">Member</span></td>
+                    </tr>
+                    <tr>
+                        <td>Sarah Johnson</td>
+                        <td>58221.0155</td>
+                        <td>sarah.j@email.com</td>
+                        <td>(509) 555-0122</td>
+                        <td><span class="badge badge-member">Member</span></td>
+                    </tr>
+                    <tr>
+                        <td>Mike &amp; Linda Davis</td>
+                        <td>58221.0161</td>
+                        <td>davis.family@email.com</td>
+                        <td>(509) 555-0133</td>
+                        <td><span class="badge badge-member">Member</span></td>
+                    </tr>
+                    <tr>
+                        <td>Karen Thompson</td>
+                        <td>58221.0174</td>
+                        <td>k.thompson@email.com</td>
+                        <td>(509) 555-0145</td>
+                        <td><span class="badge badge-member">Member</span></td>
+                    </tr>
+                    <tr>
+                        <td>Bill &amp; Nancy Martinez</td>
+                        <td>58221.0188</td>
+                        <td>martinez@email.com</td>
+                        <td>(509) 555-0156</td>
+                        <td><span class="badge badge-member">Member</span></td>
+                    </tr>
+                    <tr>
+                        <td>Doug Harris</td>
+                        <td>58221.0193</td>
+                        <td>d.harris@email.com</td>
+                        <td>(509) 555-0167</td>
+                        <td><span class="badge badge-member">Member</span></td>
+                    </tr>
+                    <tr>
+                        <td>Lisa Chen</td>
+                        <td>58221.0201</td>
+                        <td>lisa.chen@email.com</td>
+                        <td>(509) 555-0178</td>
+                        <td><span class="badge badge-member">Member</span></td>
+                    </tr>
+                    <tr>
+                        <td>James &amp; Patricia Clark</td>
+                        <td>58221.0215</td>
+                        <td>clark.jp@email.com</td>
+                        <td>(509) 555-0189</td>
+                        <td><span class="badge badge-member">Member</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p id="dir-no-results" class="hidden text-[#7E8994] text-sm text-center py-6">No members match your search.</p>
+        </div>
+
+        <p class="text-[#7E8994] text-xs mt-3">Showing 10 of 47 members. Contact the admin to add or update entries.</p>
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>requireAuth();</script>
+</body>
+</html>
+

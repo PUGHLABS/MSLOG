@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — MSLOG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="hidden md:flex items-center">
+                <div class="flex items-center space-x-1">
+                    <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
+                    <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
+                        <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
+                        <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
+                        <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
+                        <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
+                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
+                        <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
+                        <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
+                    </div>
+                </div>
+                <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
+            </div>
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden">
+        <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
+            <a href="index.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <div id="nav-mobile-member" class="hidden">
+                <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
+                <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
+                <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
+                <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
+                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
+                <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
+                <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
+            </div>
+            <div id="nav-mobile-auth"></div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main class="flex-1 px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+
+        <!-- Page Header -->
+        <div class="page-header rounded-xl p-6 mb-6">
+            <h1 id="dash-greeting" class="text-white text-2xl font-bold">Welcome Back</h1>
+            <p class="text-[#94A1B0] text-sm mt-1">Here's what's happening in your community</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="card-hover bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
+                <p class="text-[#7E8994] text-xs uppercase tracking-wide">Members</p>
+                <p class="text-2xl font-bold text-[#063559] mt-1">47</p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
+                <p class="text-[#7E8994] text-xs uppercase tracking-wide">Documents</p>
+                <p class="text-2xl font-bold text-[#063559] mt-1">23</p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
+                <p class="text-[#7E8994] text-xs uppercase tracking-wide">Events</p>
+                <p class="text-2xl font-bold text-[#063559] mt-1">4</p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
+                <p class="text-[#7E8994] text-xs uppercase tracking-wide">Forum Posts</p>
+                <p class="text-2xl font-bold text-[#063559] mt-1">12</p>
+            </div>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="grid md:grid-cols-3 gap-6">
+
+            <!-- Quick Links sidebar -->
+            <div class="md:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
+                    <h2 class="font-bold text-[#063559] mb-4 text-xs uppercase tracking-wide">Quick Links</h2>
+                    <div class="space-y-1">
+                        <a href="directory.html" class="flex items-center px-3 py-2 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-[#F9812A] mr-3">👥</span><span class="text-sm text-[#334155]">Member Directory</span>
+                        </a>
+                        <a href="documents.html" class="flex items-center px-3 py-2 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-[#F9812A] mr-3">📄</span><span class="text-sm text-[#334155]">Documents</span>
+                        </a>
+                        <a href="calendar.html" class="flex items-center px-3 py-2 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-[#F9812A] mr-3">📅</span><span class="text-sm text-[#334155]">Calendar &amp; Events</span>
+                        </a>
+                        <a href="gatecode.html" class="flex items-center px-3 py-2 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-[#F9812A] mr-3">🔑</span><span class="text-sm text-[#334155]">Gate Code</span>
+                        </a>
+                        <a href="videos.html" class="flex items-center px-3 py-2 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-[#F9812A] mr-3">🎥</span><span class="text-sm text-[#334155]">Videos</span>
+                        </a>
+                        <a href="forum.html" class="flex items-center px-3 py-2 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-[#F9812A] mr-3">💬</span><span class="text-sm text-[#334155]">Discussion Forum</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Weather -->
+                <div class="mt-6">
+                    <div id="weather-widget"></div>
+                </div>
+            </div>
+
+            <!-- Announcements + Events -->
+            <div class="md:col-span-2 space-y-6">
+
+                <!-- Announcements -->
+                <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
+                    <h2 class="font-bold text-[#063559] mb-4 text-xs uppercase tracking-wide">Announcements</h2>
+                    <div class="space-y-3">
+                        <div class="bg-[#fff7ed] border border-[#fed7aa] rounded-lg p-3">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-sm font-semibold text-[#c2410c]">Gate Code Updated</h3>
+                                <span class="text-[#7E8994] text-xs">Jan 28</span>
+                            </div>
+                            <p class="text-[#7E8994] text-xs mt-1">The IEP chain gate code has been changed. Check the Gate Code page for the updated code.</p>
+                        </div>
+                        <div class="bg-[#f0f9ff] border border-[#bae6fd] rounded-lg p-3">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-sm font-semibold text-[#0369a1]">Work Party — Feb 12</h3>
+                                <span class="text-[#7E8994] text-xs">Jan 25</span>
+                            </div>
+                            <p class="text-[#7E8994] text-xs mt-1">Scheduled work party Feb 12 at 9:00 AM. Road clearing and general maintenance. All members welcome.</p>
+                        </div>
+                        <div class="bg-[#f0f9ff] border border-[#bae6fd] rounded-lg p-3">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-sm font-semibold text-[#0369a1]">Monthly Meeting — Feb 5</h3>
+                                <span class="text-[#7E8994] text-xs">Jan 20</span>
+                            </div>
+                            <p class="text-[#7E8994] text-xs mt-1">Regular monthly meeting at 7:00 PM. Agenda posted to the forum.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Events -->
+                <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
+                    <h2 class="font-bold text-[#063559] mb-4 text-xs uppercase tracking-wide">Upcoming Events</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-[#F9812A] text-white rounded-lg p-2 text-center min-w-[48px]">
+                                <p class="text-xs font-semibold leading-none">FEB</p>
+                                <p class="text-lg font-bold leading-none">5</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-[#063559]">Monthly Meeting</h3>
+                                <p class="text-[#7E8994] text-xs">7:00 PM &middot; Community Hall</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-[#063559] text-white rounded-lg p-2 text-center min-w-[48px]">
+                                <p class="text-xs font-semibold leading-none">FEB</p>
+                                <p class="text-lg font-bold leading-none">12</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-[#063559]">Work Party</h3>
+                                <p class="text-[#7E8994] text-xs">9:00 AM &middot; Road &amp; Grounds</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-[#063559] text-white rounded-lg p-2 text-center min-w-[48px]">
+                                <p class="text-xs font-semibold leading-none">FEB</p>
+                                <p class="text-lg font-bold leading-none">19</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-[#063559]">Board Meeting</h3>
+                                <p class="text-[#7E8994] text-xs">6:00 PM &middot; Online</p>
+                            </div>
+                        </div>
+                        <a href="calendar.html" class="text-[#F9812A] text-xs font-semibold hover:underline">View full calendar →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+    requireAuth();
+    document.addEventListener('DOMContentLoaded', function() {
+        var auth = getAuth();
+        if (auth) document.getElementById('dash-greeting').textContent = 'Welcome Back, ' + auth.name;
+    });
+</script>
+</body>
+</html>
+

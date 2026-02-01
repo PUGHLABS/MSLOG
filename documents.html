@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents — MSLOG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="hidden md:flex items-center">
+                <div class="flex items-center space-x-1">
+                    <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
+                    <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
+                        <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
+                        <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
+                        <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
+                        <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
+                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
+                        <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
+                        <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
+                    </div>
+                </div>
+                <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
+            </div>
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden">
+        <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
+            <a href="index.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <div id="nav-mobile-member" class="hidden">
+                <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
+                <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
+                <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
+                <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
+                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
+                <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
+                <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
+            </div>
+            <div id="nav-mobile-auth"></div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main class="flex-1 px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <div class="page-header rounded-xl p-6 mb-6">
+            <h1 class="text-white text-2xl font-bold">Documents</h1>
+            <p class="text-[#94A1B0] text-sm mt-1">Bylaws, meeting minutes, maps, and shared resources</p>
+        </div>
+
+        <!-- Category filter -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
+            <div class="flex flex-wrap gap-2">
+                <button class="cat-pill active" data-cat="all">All</button>
+                <button class="cat-pill" data-cat="bylaws">Bylaws</button>
+                <button class="cat-pill" data-cat="minutes">Minutes</button>
+                <button class="cat-pill" data-cat="resources">Resources</button>
+                <button class="cat-pill" data-cat="maps">Maps</button>
+            </div>
+        </div>
+
+        <!-- Document list -->
+        <div class="space-y-3" id="doc-list">
+
+            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="bylaws">
+                <div class="bg-[#063559] text-white rounded-lg p-3 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h12m-6-8h.01M5 8h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2z"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 class="font-semibold text-[#063559]">CC&amp;R — Covenants, Conditions &amp; Restrictions</h3>
+                        <span class="badge badge-admin">Bylaws</span>
+                    </div>
+                    <p class="text-[#7E8994] text-xs">Original governing document for the Mount Spokane landowners association.</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <span class="text-[#94A1B0] text-xs">Updated Jan 15, 2026</span>
+                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="bylaws">
+                <div class="bg-[#063559] text-white rounded-lg p-3 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h12m-6-8h.01M5 8h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2z"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 class="font-semibold text-[#063559]">Association Bylaws — Article I through VIII</h3>
+                        <span class="badge badge-admin">Bylaws</span>
+                    </div>
+                    <p class="text-[#7E8994] text-xs">Full bylaws governing meeting procedures, voting, and membership rules.</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <span class="text-[#94A1B0] text-xs">Updated Dec 8, 2025</span>
+                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="minutes">
+                <div class="bg-[#7E8994] text-white rounded-lg p-3 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 class="font-semibold text-[#063559]">January 2026 Monthly Meeting Minutes</h3>
+                        <span class="badge badge-member">Minutes</span>
+                    </div>
+                    <p class="text-[#7E8994] text-xs">Minutes from the January 8 meeting. Discussed road maintenance and spring work party planning.</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <span class="text-[#94A1B0] text-xs">Posted Jan 10, 2026</span>
+                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="minutes">
+                <div class="bg-[#7E8994] text-white rounded-lg p-3 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 class="font-semibold text-[#063559]">December 2025 Monthly Meeting Minutes</h3>
+                        <span class="badge badge-member">Minutes</span>
+                    </div>
+                    <p class="text-[#7E8994] text-xs">Minutes from the December 4 meeting. Budget review and holiday potluck recap.</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <span class="text-[#94A1B0] text-xs">Posted Dec 6, 2025</span>
+                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="resources">
+                <div class="bg-[#F9812A] text-white rounded-lg p-3 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 class="font-semibold text-[#063559]">Emergency Contact &amp; Procedures Guide</h3>
+                        <span class="badge badge-new">Resources</span>
+                    </div>
+                    <p class="text-[#7E8994] text-xs">Fire, medical, and road emergency procedures for the Mount Spokane area. Updated 2025.</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <span class="text-[#94A1B0] text-xs">Updated Nov 20, 2025</span>
+                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="resources">
+                <div class="bg-[#F9812A] text-white rounded-lg p-3 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 class="font-semibold text-[#063559]">Snow Removal &amp; Road Maintenance Schedule</h3>
+                        <span class="badge badge-new">Resources</span>
+                    </div>
+                    <p class="text-[#7E8994] text-xs">Winter 2025–2026 maintenance schedule for all community roads.</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <span class="text-[#94A1B0] text-xs">Posted Dec 1, 2025</span>
+                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="maps">
+                <div class="bg-[#94A1B0] text-white rounded-lg p-3 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.293-5.293a1 1 0 010-1.414L9 8l7 7-2.586 2.586a1 1 0 01-1.414 0L9 14.414 3.414 20.828A1 1 0 012 20z"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 class="font-semibold text-[#063559]">Property Lot Map — Full Community</h3>
+                        <span class="badge badge-pending">Maps</span>
+                    </div>
+                    <p class="text-[#7E8994] text-xs">Overview map showing all lot numbers and property boundaries in the association.</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <span class="text-[#94A1B0] text-xs">Updated Oct 5, 2025</span>
+                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="maps">
+                <div class="bg-[#94A1B0] text-white rounded-lg p-3 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.293-5.293a1 1 0 010-1.414L9 8l7 7-2.586 2.586a1 1 0 01-1.414 0L9 14.414 3.414 20.828A1 1 0 012 20z"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 class="font-semibold text-[#063559]">Road &amp; Trail Network Map</h3>
+                        <span class="badge badge-pending">Maps</span>
+                    </div>
+                    <p class="text-[#7E8994] text-xs">All maintained roads, trails, and access points within the Mount Spokane community.</p>
+                    <div class="flex items-center gap-4 mt-2">
+                        <span class="text-[#94A1B0] text-xs">Updated Sep 12, 2025</span>
+                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>requireAuth();</script>
+</body>
+</html>
+

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gate Code — MSLOG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="hidden md:flex items-center">
+                <div class="flex items-center space-x-1">
+                    <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
+                    <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
+                        <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
+                        <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
+                        <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
+                        <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
+                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
+                        <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
+                        <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
+                    </div>
+                </div>
+                <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
+            </div>
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden">
+        <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
+            <a href="index.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <div id="nav-mobile-member" class="hidden">
+                <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
+                <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
+                <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
+                <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
+                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
+                <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
+                <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
+            </div>
+            <div id="nav-mobile-auth"></div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main class="flex-1 px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+
+        <!-- Header -->
+        <div class="page-header rounded-xl p-6 mb-6">
+            <h1 class="text-white text-2xl font-bold">IEP Chain Gate Code</h1>
+            <p class="text-[#94A1B0] text-sm mt-1">Current access code for the community gate</p>
+        </div>
+
+        <!-- Gate Code Display -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-8 text-center mb-6">
+            <p class="text-[#7E8994] text-sm uppercase tracking-wide mb-4">Current Gate Code</p>
+            <p id="gate-code-display" class="gate-code-display mb-4">7482</p>
+            <p id="gate-updated-time" class="text-[#94A1B0] text-xs">Updated January 28, 2026</p>
+        </div>
+
+        <!-- Instructions -->
+        <div class="bg-[#f0f9ff] border border-[#bae6fd] rounded-xl p-5 mb-6">
+            <h3 class="font-semibold text-[#0369a1] mb-2">How to Use</h3>
+            <ol class="text-[#0369a1] text-sm space-y-1 list-decimal list-inside">
+                <li>Approach the IEP chain gate at the community entrance.</li>
+                <li>Press the keypad button to activate it.</li>
+                <li>Enter the 4-digit code shown above.</li>
+                <li>The gate will unlock and open automatically.</li>
+            </ol>
+            <p class="text-[#7E8994] text-xs mt-3">⚠️ Do not share this code with non-members. The code changes periodically.</p>
+        </div>
+
+        <!-- Admin: Edit gate code (hidden for non-admins) -->
+        <div class="admin-only bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
+            <h3 class="font-semibold text-[#063559] mb-3">Update Gate Code <span class="badge badge-admin ml-2">Admin Only</span></h3>
+            <form id="gate-edit-form">
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label for="gate-new-code" class="block text-xs font-medium text-[#063559] mb-1">New 4-Digit Code</label>
+                        <input type="text" id="gate-new-code" name="code" placeholder="e.g. 1234" maxlength="4" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="btn-primary px-5 py-2 rounded-lg font-semibold text-sm">Update</button>
+                    </div>
+                </div>
+            </form>
+            <p id="gate-success" class="hidden text-green-700 text-xs bg-green-50 px-3 py-2 rounded mt-3">Gate code updated successfully.</p>
+        </div>
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>requireAuth();</script>
+</body>
+</html>
+

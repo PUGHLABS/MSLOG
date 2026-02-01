@@ -3,9 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>MSLOG — Mount Spokane Land Owners Group</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
 </head>
-<body>
-    <p>Hello, World!</p>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="hidden md:flex items-center">
+                <div class="flex items-center space-x-1">
+                    <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
+                    <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
+                        <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
+                        <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
+                        <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
+                        <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
+                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
+                        <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
+                        <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
+                    </div>
+                </div>
+                <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
+            </div>
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden">
+        <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
+            <a href="index.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <div id="nav-mobile-member" class="hidden">
+                <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
+                <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
+                <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
+                <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
+                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
+                <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
+                <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
+            </div>
+            <div id="nav-mobile-auth"></div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── HERO ─── -->
+<section class="relative min-h-screen overflow-hidden">
+    <img src="images/view spirit lake.jpg" alt="View from Mount Spokane" class="absolute inset-0 w-full h-full object-cover">
+    <div class="hero-overlay absolute inset-0"></div>
+
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-4 pb-40 md:pb-24">
+        <img src="images/logo1.png" alt="MSLOG" class="h-[7.5rem] w-auto mb-6 drop-shadow-lg">
+        <h1 class="text-4xl md:text-6xl font-bold text-white mb-2 drop-shadow">Mount Spokane</h1>
+        <h2 class="text-xl md:text-3xl text-[#94A1B0] mb-4 font-light">Land Owners Group</h2>
+        <p class="text-[#94A1B0] max-w-xl text-sm md:text-base leading-relaxed mb-8">
+            A private communication portal for landowners on Mount Spokane.
+            Access gate codes, property records, community events, and shared resources.
+        </p>
+        <a href="#register" class="btn-primary px-6 py-3 rounded-lg font-semibold text-sm md:text-base inline-block">Register to Join</a>
+    </div>
+
+    <!-- Weather widget — bottom right corner -->
+    <div class="absolute bottom-4 right-4 md:bottom-8 md:right-8 w-[calc(100%-2rem)] max-w-sm z-10">
+        <div id="weather-widget"></div>
+    </div>
+</section>
+
+<!-- ─── ABOUT ─── -->
+<section id="about" class="py-14 px-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-2xl md:text-3xl font-bold text-[#063559] mb-3">About Our Community</h2>
+            <div class="w-16 h-1 bg-[#F9812A] mx-auto rounded"></div>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="card-hover bg-white rounded-xl p-6 shadow-sm border border-[#e2e8f0] text-center">
+                <div class="text-3xl mb-3">🏔️</div>
+                <h3 class="font-semibold text-[#063559] mb-2">Community Hub</h3>
+                <p class="text-[#7E8994] text-sm leading-relaxed">
+                    A single digital platform to facilitate communication among landowners
+                    and protect our shared assets on Mount Spokane.
+                </p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-6 shadow-sm border border-[#e2e8f0] text-center">
+                <div class="text-3xl mb-3">🔐</div>
+                <h3 class="font-semibold text-[#063559] mb-2">Secure Access</h3>
+                <p class="text-[#7E8994] text-sm leading-relaxed">
+                    Admin-verified membership with secure passcode authentication.
+                    Only confirmed landowners gain access to member resources.
+                </p>
+            </div>
+            <div class="card-hover bg-white rounded-xl p-6 shadow-sm border border-[#e2e8f0] text-center">
+                <div class="text-3xl mb-3">📋</div>
+                <h3 class="font-semibold text-[#063559] mb-2">Resources</h3>
+                <p class="text-[#7E8994] text-sm leading-relaxed">
+                    Gate codes, property records, meeting minutes, bylaws,
+                    and community documents — all in one place.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── REGISTRATION FORM ─── -->
+<section id="register" class="py-14 px-4 bg-white">
+    <div class="max-w-2xl mx-auto">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-[#063559] mb-2">Register for Access</h2>
+            <div class="w-16 h-1 bg-[#F9812A] mx-auto rounded mb-3"></div>
+            <p class="text-[#7E8994] text-sm">
+                Fill in the form below. Your registration will be reviewed within 24 hours.
+                Enter your lot number in the format shown (example: 58221.0137).
+            </p>
+        </div>
+
+        <!-- Form -->
+        <form id="reg-form" class="bg-[#f8fafc] rounded-xl p-6 shadow-sm border border-[#e2e8f0]">
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label for="reg-name" class="block text-sm font-medium text-[#063559] mb-1">Full Name <span class="text-red-500" aria-hidden="true">*</span></label>
+                    <input type="text" id="reg-name" name="name" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm bg-white">
+                </div>
+                <div>
+                    <label for="reg-email" class="block text-sm font-medium text-[#063559] mb-1">Email Address <span class="text-red-500" aria-hidden="true">*</span></label>
+                    <input type="email" id="reg-email" name="email" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm bg-white">
+                </div>
+                <div>
+                    <label for="reg-phone" class="block text-sm font-medium text-[#063559] mb-1">Phone Number <span class="text-red-500" aria-hidden="true">*</span></label>
+                    <input type="tel" id="reg-phone" name="phone" placeholder="(509) 555-0100" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm bg-white">
+                </div>
+                <div>
+                    <label for="reg-lot" class="block text-sm font-medium text-[#063559] mb-1">Lot Number <span class="text-red-500" aria-hidden="true">*</span></label>
+                    <input type="text" id="reg-lot" name="lot" placeholder="58221.0137" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm bg-white">
+                    <p class="text-[#7E8994] text-xs mt-1">Format: nnnnn.nnnn — no letters</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <label for="reg-pass" class="block text-sm font-medium text-[#063559] mb-1">Password <span class="text-red-500" aria-hidden="true">*</span></label>
+                <input type="password" id="reg-pass" name="password" placeholder="Min. 8 characters, letters &amp; numbers" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm bg-white">
+            </div>
+            <div class="mt-4">
+                <label for="reg-pass-confirm" class="block text-sm font-medium text-[#063559] mb-1">Confirm Password <span class="text-red-500" aria-hidden="true">*</span></label>
+                <input type="password" id="reg-pass-confirm" name="password_confirm" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm bg-white">
+            </div>
+            <p id="reg-error" class="hidden text-red-600 text-xs mt-3 bg-red-50 px-3 py-2 rounded" role="alert"></p>
+            <button type="submit" class="btn-primary w-full mt-5 px-6 py-2.5 rounded-lg font-semibold text-sm">Send Registration</button>
+        </form>
+
+        <!-- Confirmation (hidden until form submits) -->
+        <div id="reg-confirm" class="hidden bg-green-50 border border-green-200 rounded-xl p-8 text-center">
+            <div class="text-4xl mb-4">✅</div>
+            <h3 class="text-lg font-bold text-green-800 mb-2">Registration Submitted</h3>
+            <p class="text-green-700 text-sm leading-relaxed">
+                Your registration has been received and will be reviewed by an administrator.
+                A secure passcode will be emailed to you within 24 hours once approved.
+            </p>
+            <p class="text-green-600 text-xs mt-3">If you do not receive an email, check your spam folder.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section class="py-14 px-4 bg-[#f0f4f8]">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-[#063559] mb-3">How It Works</h2>
+            <div class="w-16 h-1 bg-[#F9812A] mx-auto rounded"></div>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-[#F9812A] text-white rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-3">1</div>
+                <h3 class="font-semibold text-[#063559] mb-1">Register</h3>
+                <p class="text-[#7E8994] text-sm">Fill out the form above with your name, email, phone, and lot number.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 bg-[#F9812A] text-white rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-3">2</div>
+                <h3 class="font-semibold text-[#063559] mb-1">Verify</h3>
+                <p class="text-[#7E8994] text-sm">An admin verifies your identity as a landowner. Allow up to 24 hours.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 bg-[#F9812A] text-white rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-3">3</div>
+                <h3 class="font-semibold text-[#063559] mb-1">Access</h3>
+                <p class="text-[#7E8994] text-sm">Receive your secure passcode via email and sign in to access all member resources.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
+

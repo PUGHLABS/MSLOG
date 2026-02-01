@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videos — MSLOG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="hidden md:flex items-center">
+                <div class="flex items-center space-x-1">
+                    <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
+                    <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
+                        <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
+                        <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
+                        <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
+                        <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
+                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
+                        <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
+                        <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
+                    </div>
+                </div>
+                <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
+            </div>
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden">
+        <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
+            <a href="index.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <div id="nav-mobile-member" class="hidden">
+                <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
+                <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
+                <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
+                <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
+                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
+                <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
+                <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
+            </div>
+            <div id="nav-mobile-auth"></div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main class="flex-1 px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <div class="page-header rounded-xl p-6 mb-6">
+            <h1 class="text-white text-2xl font-bold">Videos</h1>
+            <p class="text-[#94A1B0] text-sm mt-1">Community videos, tutorials, and event recordings</p>
+        </div>
+
+        <!-- Video Grid -->
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            <!-- Video Card 1 -->
+            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
+                    <!-- YouTube placeholder (replace src with real embed URL) -->
+                    <div class="text-center">
+                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        <p class="text-white text-xs opacity-60">YouTube Video</p>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-[#063559] text-sm">Winter Road Maintenance Tutorial</h3>
+                    <p class="text-[#7E8994] text-xs mt-1">How to safely clear snow and ice from your access road.</p>
+                    <p class="text-[#94A1B0] text-xs mt-2">Posted Dec 15, 2025</p>
+                </div>
+            </div>
+
+            <!-- Video Card 2 -->
+            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
+                    <div class="text-center">
+                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        <p class="text-white text-xs opacity-60">YouTube Video</p>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-[#063559] text-sm">November Work Party Recap</h3>
+                    <p class="text-[#7E8994] text-xs mt-1">Highlights from the November community work party and road improvements.</p>
+                    <p class="text-[#94A1B0] text-xs mt-2">Posted Nov 25, 2025</p>
+                </div>
+            </div>
+
+            <!-- Video Card 3 -->
+            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
+                    <div class="text-center">
+                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        <p class="text-white text-xs opacity-60">YouTube Video</p>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-[#063559] text-sm">Gate Code Keypad Demo</h3>
+                    <p class="text-[#7E8994] text-xs mt-1">Quick walkthrough on how to use the IEP chain gate keypad.</p>
+                    <p class="text-[#94A1B0] text-xs mt-2">Posted Oct 10, 2025</p>
+                </div>
+            </div>
+
+            <!-- Video Card 4 -->
+            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
+                    <div class="text-center">
+                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        <p class="text-white text-xs opacity-60">YouTube Video</p>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-[#063559] text-sm">Annual Meeting 2025 Highlights</h3>
+                    <p class="text-[#7E8994] text-xs mt-1">Key decisions and updates from the 2025 annual landowners meeting.</p>
+                    <p class="text-[#94A1B0] text-xs mt-2">Posted Sep 5, 2025</p>
+                </div>
+            </div>
+
+            <!-- Video Card 5 -->
+            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
+                    <div class="text-center">
+                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        <p class="text-white text-xs opacity-60">YouTube Video</p>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-[#063559] text-sm">Mount Spokane Scenic Drive Tour</h3>
+                    <p class="text-[#7E8994] text-xs mt-1">A scenic drive through the community showing all access roads and views.</p>
+                    <p class="text-[#94A1B0] text-xs mt-2">Posted Aug 18, 2025</p>
+                </div>
+            </div>
+
+            <!-- Video Card 6 -->
+            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
+                    <div class="text-center">
+                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        <p class="text-white text-xs opacity-60">YouTube Video</p>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-[#063559] text-sm">Fire Safety &amp; Prevention Guide</h3>
+                    <p class="text-[#7E8994] text-xs mt-1">Wildfire prevention tips and emergency evacuation routes for our area.</p>
+                    <p class="text-[#94A1B0] text-xs mt-2">Posted Jul 4, 2025</p>
+                </div>
+            </div>
+
+        </div>
+
+        <p class="text-[#7E8994] text-xs mt-6">To add a YouTube video, contact the admin with the video URL.</p>
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>requireAuth();</script>
+</body>
+</html>
+

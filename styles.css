@@ -1,0 +1,189 @@
+/* MSLOG — Mount Spokane Land Owners Group */
+/* Alpine Mountain Theme — Custom Styles */
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #7E8994; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #063559; }
+
+/* Nav active state */
+.nav-link.active {
+    color: #F9812A !important;
+    font-weight: 600;
+}
+
+/* Mobile hamburger menu (max-height transition) */
+#mobile-menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+#mobile-menu.open {
+    max-height: 600px;
+}
+
+/* Hero gradient overlay */
+.hero-overlay {
+    background: linear-gradient(
+        to bottom,
+        rgba(6, 53, 89, 0.65) 0%,
+        rgba(6, 53, 89, 0.3) 45%,
+        rgba(6, 53, 89, 0.8) 100%
+    );
+}
+
+/* Weather card */
+.weather-card {
+    background: linear-gradient(135deg, rgba(6,53,89,0.93) 0%, rgba(10,74,122,0.96) 100%);
+    backdrop-filter: blur(8px);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #F9812A;
+    color: white;
+    transition: background-color 0.2s, transform 0.1s;
+    cursor: pointer;
+}
+.btn-primary:hover { background-color: #e07020; }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-secondary {
+    background-color: #7E8994;
+    color: white;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+.btn-secondary:hover { background-color: #6b7a85; }
+
+/* Form input focus ring */
+.form-input:focus {
+    outline: none;
+    border-color: #F9812A !important;
+    box-shadow: 0 0 0 3px rgba(249, 129, 42, 0.2);
+}
+
+/* Card hover lift */
+.card-hover {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(6, 53, 89, 0.15);
+}
+
+/* Data table */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+    background-color: #063559;
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 0.875rem;
+}
+.data-table tbody tr:nth-child(even) { background-color: #f8fafc; }
+.data-table tbody tr:hover { background-color: #eef2f7; }
+
+/* Calendar grid */
+.cal-day {
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    position: relative;
+    transition: background-color 0.15s;
+}
+.cal-day:not(.empty):hover { background-color: #f1f5f9; cursor: pointer; }
+.cal-day.today {
+    background-color: #063559;
+    color: white;
+    font-weight: 700;
+}
+.cal-day.has-event::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    width: 5px;
+    height: 5px;
+    background-color: #F9812A;
+    border-radius: 50%;
+}
+.cal-day.today.has-event::after { background-color: #fff; }
+
+/* Gate code large display */
+.gate-code-display {
+    font-size: clamp(2.5rem, 10vw, 5.5rem);
+    font-weight: 800;
+    letter-spacing: 0.3em;
+    color: #063559;
+    line-height: 1.1;
+}
+
+/* Forum thread left border */
+.thread-card { border-left: 4px solid #F9812A; }
+
+/* Video aspect ratio */
+.video-aspect { aspect-ratio: 16 / 9; }
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.badge-admin { background-color: #fef3c7; color: #b45309; }
+.badge-member { background-color: #dbeafe; color: #1d4ed8; }
+.badge-pending { background-color: #f3e8ff; color: #7c3aed; }
+.badge-new { background-color: #dcfce7; color: #16a34a; }
+
+/* Page header gradient */
+.page-header {
+    background: linear-gradient(135deg, #063559 0%, #0a4a7a 100%);
+}
+
+/* Admin-only elements hidden until JS reveals them */
+.admin-only { display: none; }
+
+/* Doc category pills */
+.cat-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.cat-pill.active {
+    background-color: #063559;
+    color: white;
+}
+.cat-pill:not(.active) {
+    background-color: #e2e8f0;
+    color: #7E8994;
+}
+.cat-pill:not(.active):hover {
+    background-color: #cbd5e1;
+}

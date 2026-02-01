@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — MSLOG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="hidden md:flex items-center">
+                <div class="flex items-center space-x-1">
+                    <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
+                    <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
+                        <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
+                        <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
+                        <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
+                        <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
+                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
+                        <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
+                        <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
+                    </div>
+                </div>
+                <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
+            </div>
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobile-menu" class="md:hidden">
+        <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
+            <a href="index.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <div id="nav-mobile-member" class="hidden">
+                <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
+                <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
+                <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
+                <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
+                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
+                <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
+                <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
+            </div>
+            <div id="nav-mobile-auth"></div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main class="flex-1 px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <div class="page-header rounded-xl p-6 mb-6">
+            <div class="flex items-center gap-3">
+                <h1 class="text-white text-2xl font-bold">Admin Dashboard</h1>
+                <span class="badge badge-admin">Admin</span>
+            </div>
+            <p class="text-[#94A1B0] text-sm mt-1">Manage members, content, and system settings</p>
+        </div>
+
+        <!-- Stats row -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
+                <p class="text-[#7E8994] text-xs uppercase tracking-wide">Total Members</p>
+                <p class="text-2xl font-bold text-[#063559] mt-1">47</p>
+                <p class="text-green-600 text-xs mt-1">+2 this month</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
+                <p class="text-[#7E8994] text-xs uppercase tracking-wide">Pending Approvals</p>
+                <p class="text-2xl font-bold text-[#F9812A] mt-1">3</p>
+                <p class="text-[#F9812A] text-xs mt-1">Awaiting review</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
+                <p class="text-[#7E8994] text-xs uppercase tracking-wide">Documents</p>
+                <p class="text-2xl font-bold text-[#063559] mt-1">23</p>
+                <p class="text-[#7E8994] text-xs mt-1">Last updated Jan 15</p>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
+                <p class="text-[#7E8994] text-xs uppercase tracking-wide">Gate Code</p>
+                <p class="text-2xl font-bold text-[#063559] mt-1">7482</p>
+                <p class="text-[#7E8994] text-xs mt-1">Changed Jan 28</p>
+            </div>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="grid md:grid-cols-2 gap-6">
+
+            <!-- Pending Registrations -->
+            <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
+                <h2 class="font-bold text-[#063559] mb-4 text-xs uppercase tracking-wide">Pending Registrations</h2>
+                <div class="space-y-3">
+
+                    <div class="border border-[#e2e8f0] rounded-lg p-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="text-sm font-semibold text-[#063559]">Mark Henderson</h4>
+                                <p class="text-[#7E8994] text-xs">mark.h@email.com &middot; Lot: 58221.0222</p>
+                                <p class="text-[#94A1B0] text-xs">Submitted Jan 30, 2026</p>
+                            </div>
+                            <span class="badge badge-pending">Pending</span>
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button class="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded font-medium transition-colors">✓ Approve</button>
+                            <button class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded font-medium transition-colors">✗ Reject</button>
+                        </div>
+                    </div>
+
+                    <div class="border border-[#e2e8f0] rounded-lg p-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="text-sm font-semibold text-[#063559]">Susan &amp; Gary Patel</h4>
+                                <p class="text-[#7E8994] text-xs">susan.patel@email.com &middot; Lot: 58221.0218</p>
+                                <p class="text-[#94A1B0] text-xs">Submitted Jan 29, 2026</p>
+                            </div>
+                            <span class="badge badge-pending">Pending</span>
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button class="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded font-medium transition-colors">✓ Approve</button>
+                            <button class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded font-medium transition-colors">✗ Reject</button>
+                        </div>
+                    </div>
+
+                    <div class="border border-[#e2e8f0] rounded-lg p-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="text-sm font-semibold text-[#063559]">David Kim</h4>
+                                <p class="text-[#7E8994] text-xs">d.kim@email.com &middot; Lot: 58221.0231</p>
+                                <p class="text-[#94A1B0] text-xs">Submitted Jan 27, 2026</p>
+                            </div>
+                            <span class="badge badge-pending">Pending</span>
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button class="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded font-medium transition-colors">✓ Approve</button>
+                            <button class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded font-medium transition-colors">✗ Reject</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Admin Actions -->
+            <div class="space-y-6">
+
+                <!-- Content Management -->
+                <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
+                    <h2 class="font-bold text-[#063559] mb-3 text-xs uppercase tracking-wide">Content Management</h2>
+                    <div class="space-y-2">
+                        <a href="documents.html" class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-sm text-[#334155]">📄 Manage Documents</span>
+                            <span class="text-[#F9812A] text-xs">→</span>
+                        </a>
+                        <a href="videos.html" class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-sm text-[#334155]">🎥 Manage Videos</span>
+                            <span class="text-[#F9812A] text-xs">→</span>
+                        </a>
+                        <a href="calendar.html" class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-sm text-[#334155]">📅 Manage Events</span>
+                            <span class="text-[#F9812A] text-xs">→</span>
+                        </a>
+                        <a href="gatecode.html" class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-sm text-[#334155]">🔑 Update Gate Code</span>
+                            <span class="text-[#F9812A] text-xs">→</span>
+                        </a>
+                        <a href="directory.html" class="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[#f0f4f8] transition-colors">
+                            <span class="text-sm text-[#334155]">👥 Member Directory</span>
+                            <span class="text-[#F9812A] text-xs">→</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Log -->
+                <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
+                    <h2 class="font-bold text-[#063559] mb-3 text-xs uppercase tracking-wide">Recent Activity</h2>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
+                            <span class="text-[#F9812A] text-xs mt-0.5">●</span>
+                            <div>
+                                <p class="text-sm text-[#334155]">Gate code changed</p>
+                                <p class="text-[#94A1B0] text-xs">Jan 28 at 2:15 PM</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-[#7E8994] text-xs mt-0.5">●</span>
+                            <div>
+                                <p class="text-sm text-[#334155]">New registration: Mark Henderson</p>
+                                <p class="text-[#94A1B0] text-xs">Jan 30 at 10:42 AM</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-[#7E8994] text-xs mt-0.5">●</span>
+                            <div>
+                                <p class="text-sm text-[#334155]">Document uploaded: Jan 2026 Minutes</p>
+                                <p class="text-[#94A1B0] text-xs">Jan 10 at 9:00 AM</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-[#7E8994] text-xs mt-0.5">●</span>
+                            <div>
+                                <p class="text-sm text-[#334155]">Member approved: Lisa Chen</p>
+                                <p class="text-[#94A1B0] text-xs">Nov 15 at 3:30 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>requireAuth(); requireAdmin();</script>
+</body>
+</html>
+
