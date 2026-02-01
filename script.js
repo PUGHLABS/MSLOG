@@ -1,30 +1,80 @@
 // MSLOG — Mount Spokane Land Owners Group
 // Main Application Script
 
-// ─── Auth (localStorage simulation) ─────────────────────────────
-const AUTH_KEY = 'mslog_auth';
+// ─── Auth (Firebase) ─────────────────────────────────────────────
+let currentUser = null;
+let userProfile = null;
 
-function getAuth()   { const r = localStorage.getItem(AUTH_KEY); return r ? JSON.parse(r) : null; }
-function setAuth(u)  { localStorage.setItem(AUTH_KEY, JSON.stringify(u)); }
-function clearAuth() { localStorage.removeItem(AUTH_KEY); }
-function isAuth()    { return !!getAuth(); }
-function isAdmin()   { const a = getAuth(); return a && a.role === 'admin'; }
+// Listen for auth state changes
+if (typeof auth !== 'undefined') {
+    auth.onAuthStateChanged(async function(user) {
+        currentUser = user;
+        if (user) {
+            // Fetch user profile from Firestore
+            try {
+                const doc = await db.collection('members').doc(user.uid).get();
+                userProfile = doc.exists ? doc.data() : null;
+            } catch (e) {
+                console.error('Error fetching profile:', e);
+                userProfile = null;
+            }
+        } else {
+            userProfile = null;
+        }
+        initNav(); // Re-render nav on auth change
+    });
+}
 
-// Demo user accounts (email / password / lot)
-const USERS = [
-    { email:'admin@mslog.org',  password:'Admin123',  lot:'58221.0137', name:'Robert Admin', role:'admin',  phone:'(509) 555-0100' },
-    { email:'jane@mslog.org',   password:'Member1',   lot:'58221.0138', name:'Jane Smith',   role:'member', phone:'(509) 555-0101' },
-    { email:'test@mslog.org',   password:'Test1234',  lot:'58221.0139', name:'Test User',    role:'member', phone:'(509) 555-0102' }
-];
+function getAuth() {
+    if (!currentUser || !userProfile) return null;
+    return {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        name: userProfile.name || currentUser.email,
+        role: userProfile.role || 'member',
+        lot: userProfile.lot || '',
+        phone: userProfile.phone || ''
+    };
+}
 
-function login(email, password, lot) {
-    const u = USERS.find(function(u) { return u.email === email && u.password === password && u.lot === lot; });
-    if (u) { setAuth(u); return true; }
-    return false;
+function isAuth() { return !!currentUser; }
+function isAdmin() { return userProfile && userProfile.role === 'admin'; }
+
+async function loginWithEmail(email, password) {
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+        return { success: true };
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+}
+
+async function registerWithEmail(email, password, profileData) {
+    try {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        // Store additional profile data in Firestore
+        await db.collection('members').doc(cred.user.uid).set({
+            email: email,
+            name: profileData.name,
+            lot: profileData.lot,
+            phone: profileData.phone || '',
+            role: 'pending', // Admin must approve
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        return { success: true };
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+}
+
+function logout() {
+    if (typeof auth !== 'undefined') {
+        auth.signOut();
+    }
 }
 
 function requireAuth() { if (!isAuth()) window.location.href = 'login.html'; }
-function requireAdmin(){ if (!isAdmin()) window.location.href = 'dashboard.html'; }
+function requireAdmin() { if (!isAdmin()) window.location.href = 'dashboard.html'; }
 
 // ─── Navigation ──────────────────────────────────────────────────
 function initNav() {
@@ -73,19 +123,23 @@ function initNav() {
     }
 }
 
-function doLogout() { clearAuth(); window.location.href = 'index.html'; }
+function doLogout() { logout(); window.location.href = 'index.html'; }
 
 // ─── Registration Form ───────────────────────────────────────────
 function initRegForm() {
     var form = document.getElementById('reg-form');
     if (!form) return;
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        var lot  = document.getElementById('reg-lot').value;
-        var pass = document.getElementById('reg-pass').value;
-        var passC= document.getElementById('reg-pass-confirm').value;
-        var err  = document.getElementById('reg-error');
+        var name  = document.getElementById('reg-name').value;
+        var email = document.getElementById('reg-email').value;
+        var phone = document.getElementById('reg-phone').value;
+        var lot   = document.getElementById('reg-lot').value;
+        var pass  = document.getElementById('reg-pass').value;
+        var passC = document.getElementById('reg-pass-confirm').value;
+        var err   = document.getElementById('reg-error');
+        var btn   = form.querySelector('button[type="submit"]');
 
         if (!/^\d{5}\.\d{4}$/.test(lot)) {
             err.textContent = 'Lot number must be in format: 58221.0137 (5 digits . 4 digits)';
@@ -99,9 +153,21 @@ function initRegForm() {
             err.textContent = 'Passwords do not match.';
             err.classList.remove('hidden'); return;
         }
-        err.classList.add('hidden');
-        form.classList.add('hidden');
-        document.getElementById('reg-confirm').classList.remove('hidden');
+
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+
+        var result = await registerWithEmail(email, pass, { name: name, lot: lot, phone: phone });
+        if (result.success) {
+            err.classList.add('hidden');
+            form.classList.add('hidden');
+            document.getElementById('reg-confirm').classList.remove('hidden');
+        } else {
+            err.textContent = result.message || 'Registration failed. Please try again.';
+            err.classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = 'Register';
+        }
     });
 }
 
@@ -110,22 +176,24 @@ function initLoginForm() {
     var form = document.getElementById('login-form');
     if (!form) return;
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         var email = document.getElementById('login-email').value;
         var pass  = document.getElementById('login-pass').value;
-        var lot   = document.getElementById('login-lot').value;
         var err   = document.getElementById('login-error');
+        var btn   = form.querySelector('button[type="submit"]');
 
-        if (!/^\d{5}\.\d{4}$/.test(lot)) {
-            err.textContent = 'Lot number format: nnnnn.nnnn (e.g. 58221.0137)';
-            err.classList.remove('hidden'); return;
-        }
-        if (login(email, pass, lot)) {
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
+
+        var result = await loginWithEmail(email, pass);
+        if (result.success) {
             window.location.href = 'dashboard.html';
         } else {
-            err.textContent = 'Invalid email, password, or lot number.';
+            err.textContent = result.message || 'Invalid email or password.';
             err.classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = 'Login';
             setTimeout(function() { err.classList.add('hidden'); }, 4000);
         }
     });

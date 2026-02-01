@@ -1,0 +1,21 @@
+# Firebase config with real credentials - DO NOT COMMIT
+firebase-config.js
+
+# Keep the template
+!firebase-config.template.js
+
+# Claude Code settings
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+.env.*.local

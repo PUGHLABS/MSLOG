@@ -17,19 +17,20 @@ Private communication portal for landowners on Mount Spokane, WA.
 | Discussion Forum | `forum.html` | Member |
 | Admin Dashboard | `admin.html` | Admin |
 
-## Demo Login
-
-| Role | Email | Password | Lot |
-|---|---|---|---|
-| Admin | admin@mslog.org | Admin123 | 58221.0137 |
-| Member | jane@mslog.org | Member1 | 58221.0138 |
-
 ## Tech Stack
 
 - **Tailwind CSS** via CDN (`cdn.tailwindcss.com`)
+- **Firebase Auth** for secure authentication
+- **Firestore** for member data storage
 - Vanilla JavaScript — no framework or build step
-- Auth simulated with `localStorage`
 - Open with **Live Server** in VS Code
+
+## Firebase Setup
+
+1. Create a project at https://console.firebase.google.com
+2. Enable Email/Password authentication
+3. Create a Firestore database
+4. Copy your config to `firebase-config.js`
 
 ## Color Palette
 
