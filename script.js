@@ -452,12 +452,12 @@ function initQRCode() {
     qr.addEventListener('click', function() {
         if (expanded) {
             // Shrink back to original size
-            qr.classList.remove('w-[5.7rem]', 'h-[5.7rem]', 'md:w-[6.6rem]', 'md:h-[6.6rem]');
-            qr.classList.add('w-[3.8rem]', 'h-[3.8rem]', 'md:w-[4.4rem]', 'md:h-[4.4rem]');
+            qr.classList.remove('w-[4.125rem]', 'h-[4.125rem]');
+            qr.classList.add('w-[2.75rem]', 'h-[2.75rem]');
         } else {
             // Expand by 50%
-            qr.classList.remove('w-[3.8rem]', 'h-[3.8rem]', 'md:w-[4.4rem]', 'md:h-[4.4rem]');
-            qr.classList.add('w-[5.7rem]', 'h-[5.7rem]', 'md:w-[6.6rem]', 'md:h-[6.6rem]');
+            qr.classList.remove('w-[2.75rem]', 'h-[2.75rem]');
+            qr.classList.add('w-[4.125rem]', 'h-[4.125rem]');
         }
         expanded = !expanded;
     });
