@@ -139,7 +139,22 @@ function initNav() {
         if (auth.role === 'admin') {
             document.querySelectorAll('.admin-only').forEach(function(el) { el.classList.remove('admin-only'); });
         }
+
+        // Update hero section for logged-in users (index.html)
+        var heroRegBtn = document.getElementById('hero-register-btn');
+        var heroLoginPrompt = document.getElementById('hero-login-prompt');
+        var heroDashBtn = document.getElementById('hero-dashboard-btn');
+        if (heroRegBtn) heroRegBtn.classList.add('hidden');
+        if (heroLoginPrompt) heroLoginPrompt.classList.add('hidden');
+        if (heroDashBtn) heroDashBtn.classList.remove('hidden');
     } else {
+        // Show register/login for logged-out users (index.html)
+        var heroRegBtn = document.getElementById('hero-register-btn');
+        var heroLoginPrompt = document.getElementById('hero-login-prompt');
+        var heroDashBtn = document.getElementById('hero-dashboard-btn');
+        if (heroRegBtn) heroRegBtn.classList.remove('hidden');
+        if (heroLoginPrompt) heroLoginPrompt.classList.remove('hidden');
+        if (heroDashBtn) heroDashBtn.classList.add('hidden');
         if (dAuth) dAuth.innerHTML =
             '<a href="login.html" class="nav-link text-xs bg-[#F9812A] hover:bg-[#e07020] text-white px-4 py-1.5 rounded font-semibold">Login</a>';
         if (mAuth) mAuth.innerHTML =
