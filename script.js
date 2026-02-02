@@ -443,6 +443,26 @@ function initGateCode() {
     });
 }
 
+// ─── QR Code expand on click ─────────────────────────────────────
+function initQRCode() {
+    var qr = document.getElementById('qr-code');
+    if (!qr) return;
+
+    var expanded = false;
+    qr.addEventListener('click', function() {
+        if (expanded) {
+            // Shrink back to original size
+            qr.classList.remove('w-[4.5rem]', 'h-[4.5rem]', 'md:w-24', 'md:h-24');
+            qr.classList.add('w-12', 'h-12', 'md:w-16', 'md:h-16');
+        } else {
+            // Expand by 50%
+            qr.classList.remove('w-12', 'h-12', 'md:w-16', 'md:h-16');
+            qr.classList.add('w-[4.5rem]', 'h-[4.5rem]', 'md:w-24', 'md:h-24');
+        }
+        expanded = !expanded;
+    });
+}
+
 // ─── Init everything on DOMContentLoaded ─────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     initHamburger();
@@ -455,4 +475,5 @@ document.addEventListener('DOMContentLoaded', function() {
     initDocFilter();
     initForum();
     initGateCode();
+    initQRCode();
 });
