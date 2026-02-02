@@ -105,7 +105,9 @@ async function requireAdmin() {
 function initNav() {
     var btn  = document.getElementById('hamburger');
     var menu = document.getElementById('mobile-menu');
-    if (btn && menu) {
+    // Only attach listener once to prevent duplicate toggles
+    if (btn && menu && !btn.hasAttribute('data-initialized')) {
+        btn.setAttribute('data-initialized', 'true');
         btn.addEventListener('click', function() { menu.classList.toggle('open'); });
     }
 
