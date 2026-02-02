@@ -417,7 +417,7 @@ function initGateCode() {
             }
 
             btn.disabled = false;
-            btn.textContent = 'Update Code';
+            btn.textContent = 'Update';
         }
     });
 }
