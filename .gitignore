@@ -1,8 +1,5 @@
-# Firebase config with real credentials - DO NOT COMMIT
-firebase-config.js
-
-# Keep the template
-!firebase-config.template.js
+# Keep template for reference
+# Note: Firebase API keys are safe to be public - security comes from Firestore rules
 
 # Claude Code settings
 .claude/
