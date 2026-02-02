@@ -101,16 +101,20 @@ async function requireAdmin() {
     if (!isAdmin()) window.location.href = 'dashboard.html';
 }
 
-// ─── Navigation ──────────────────────────────────────────────────
-function initNav() {
+// ─── Hamburger Menu (runs once) ─────────────────────────────────
+function initHamburger() {
     var btn  = document.getElementById('hamburger');
     var menu = document.getElementById('mobile-menu');
-    // Only attach listener once to prevent duplicate toggles
-    if (btn && menu && !btn.hasAttribute('data-initialized')) {
-        btn.setAttribute('data-initialized', 'true');
-        btn.addEventListener('click', function() { menu.classList.toggle('open'); });
+    if (btn && menu) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.classList.toggle('open');
+        });
     }
+}
 
+// ─── Navigation ──────────────────────────────────────────────────
+function initNav() {
     // Highlight current page link
     var page = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.nav-link[href]').forEach(function(a) {
@@ -441,6 +445,7 @@ function initGateCode() {
 
 // ─── Init everything on DOMContentLoaded ─────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
+    initHamburger();
     initNav();
     initRegForm();
     initLoginForm();
