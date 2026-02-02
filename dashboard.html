@@ -220,10 +220,10 @@
 
 <script src="script.js"></script>
 <script>
-    requireAuth();
-    document.addEventListener('DOMContentLoaded', function() {
-        var auth = getAuth();
-        if (auth) document.getElementById('dash-greeting').textContent = 'Welcome Back, ' + auth.name;
+    document.addEventListener('DOMContentLoaded', async function() {
+        await requireAuth();
+        var authData = getAuth();
+        if (authData) document.getElementById('dash-greeting').textContent = 'Welcome Back, ' + authData.name;
     });
 </script>
 </body>

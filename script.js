@@ -4,9 +4,16 @@
 // ─── Auth (Firebase) ─────────────────────────────────────────────
 let currentUser = null;
 let userProfile = null;
+let authReady = false;
+let authReadyPromise = null;
+let authReadyResolve = null;
 
-// Listen for auth state changes
+// Create a promise that resolves when auth state is known
 if (typeof auth !== 'undefined') {
+    authReadyPromise = new Promise(function(resolve) {
+        authReadyResolve = resolve;
+    });
+
     auth.onAuthStateChanged(async function(user) {
         currentUser = user;
         if (user) {
@@ -21,8 +28,18 @@ if (typeof auth !== 'undefined') {
         } else {
             userProfile = null;
         }
+
+        // Mark auth as ready and resolve the promise
+        if (!authReady) {
+            authReady = true;
+            if (authReadyResolve) authReadyResolve();
+        }
+
         initNav(); // Re-render nav on auth change
     });
+} else {
+    authReadyPromise = Promise.resolve();
+    authReady = true;
 }
 
 function getAuth() {
@@ -73,8 +90,16 @@ function logout() {
     }
 }
 
-function requireAuth() { if (!isAuth()) window.location.href = 'login.html'; }
-function requireAdmin() { if (!isAdmin()) window.location.href = 'dashboard.html'; }
+// Wait for auth to be ready before checking
+async function requireAuth() {
+    await authReadyPromise;
+    if (!isAuth()) window.location.href = 'login.html';
+}
+
+async function requireAdmin() {
+    await authReadyPromise;
+    if (!isAdmin()) window.location.href = 'dashboard.html';
+}
 
 // ─── Navigation ──────────────────────────────────────────────────
 function initNav() {
@@ -337,20 +362,62 @@ function initForum() {
     });
 }
 
-// ─── Gate code admin edit (mock) ─────────────────────────────────
+// ─── Gate code (Firestore) ───────────────────────────────────────
+async function loadGateCode() {
+    var display = document.getElementById('gate-code-display');
+    var timeEl = document.getElementById('gate-updated-time');
+    if (!display) return;
+
+    try {
+        var doc = await db.collection('settings').doc('gatecode').get();
+        if (doc.exists) {
+            var data = doc.data();
+            display.textContent = data.code || '----';
+            if (data.updatedAt) {
+                var date = data.updatedAt.toDate();
+                timeEl.textContent = 'Updated ' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            }
+        }
+    } catch (e) {
+        console.error('Error loading gate code:', e);
+    }
+}
+
 function initGateCode() {
+    // Load current gate code
+    loadGateCode();
+
     var form = document.getElementById('gate-edit-form');
     if (!form) return;
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         var val = document.getElementById('gate-new-code').value.trim();
+        var btn = form.querySelector('button[type="submit"]');
+
         if (/^\d{4}$/.test(val)) {
-            document.getElementById('gate-code-display').textContent = val;
-            document.getElementById('gate-updated-time').textContent = 'Updated just now';
-            document.getElementById('gate-success').classList.remove('hidden');
-            setTimeout(function() { document.getElementById('gate-success').classList.add('hidden'); }, 3000);
-            form.reset();
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                await db.collection('settings').doc('gatecode').set({
+                    code: val,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser ? currentUser.uid : null
+                });
+
+                document.getElementById('gate-code-display').textContent = val;
+                document.getElementById('gate-updated-time').textContent = 'Updated just now';
+                document.getElementById('gate-success').classList.remove('hidden');
+                setTimeout(function() { document.getElementById('gate-success').classList.add('hidden'); }, 3000);
+                form.reset();
+            } catch (e) {
+                console.error('Error saving gate code:', e);
+                alert('Failed to save gate code. Please try again.');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Update Code';
         }
     });
 }

@@ -242,7 +242,7 @@
 </footer>
 
 <script src="script.js"></script>
-<script>requireAuth(); requireAdmin();</script>
+<script>document.addEventListener('DOMContentLoaded', async function() { await requireAuth(); await requireAdmin(); });</script>
 </body>
 </html>
 

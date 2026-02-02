@@ -87,10 +87,10 @@
         <div class="bg-[#f0f9ff] border border-[#bae6fd] rounded-xl p-5 mb-6">
             <h3 class="font-semibold text-[#0369a1] mb-2">How to Use</h3>
             <ol class="text-[#0369a1] text-sm space-y-1 list-decimal list-inside">
-                <li>Approach the IEP chain gate at the community entrance.</li>
-                <li>Press the keypad button to activate it.</li>
                 <li>Enter the 4-digit code shown above.</li>
-                <li>The gate will unlock and open automatically.</li>
+                <li>Move the chain to the side.</li>
+                <li>When leaving, make sure to wrap the chain around the post.</li>
+                <li>Scramble the lock code when done.</li>
             </ol>
             <p class="text-[#7E8994] text-xs mt-3">⚠️ Do not share this code with non-members. The code changes periodically.</p>
         </div>
@@ -129,7 +129,7 @@
 </footer>
 
 <script src="script.js"></script>
-<script>requireAuth();</script>
+<script>document.addEventListener('DOMContentLoaded', async function() { await requireAuth(); });</script>
 </body>
 </html>
 
