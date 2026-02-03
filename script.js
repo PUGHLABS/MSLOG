@@ -861,29 +861,131 @@ function initEvents() {
     });
 }
 
-// ─── Forum — new thread (mock) ───────────────────────────────────
+// ─── Forum (Firestore CRUD) ──────────────────────────────────────
+function isNewThread(createdAt) {
+    if (!createdAt) return false;
+    var threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    return createdAt.toDate() > threeDaysAgo;
+}
+
+function renderThreadItem(doc, isAdmin, currentUserId) {
+    var data = doc.data();
+    var dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Unknown';
+    var canDelete = isAdmin || (currentUserId && data.authorId === currentUserId);
+    var isNew = isNewThread(data.createdAt);
+
+    var deleteBtn = canDelete ?
+        '<button onclick="deleteThread(\'' + doc.id + '\')" class="text-red-500 hover:text-red-700 text-xs font-semibold ml-2">Delete</button>' : '';
+
+    var newBadge = isNew ? '<span class="badge badge-new">New</span>' : '';
+
+    return '<div class="thread-card bg-white rounded-lg p-4 shadow-sm" data-id="' + doc.id + '">' +
+        '<div class="flex justify-between items-start">' +
+        '<h4 class="font-semibold text-[#063559]">' + escapeHtml(data.title) + '</h4>' +
+        newBadge +
+        '</div>' +
+        '<p class="text-[#7E8994] text-xs mt-1">Posted by ' + escapeHtml(data.authorName || 'Unknown') + ' &mdash; ' + dateStr + ' &middot; ' + (data.replyCount || 0) + ' replies' + deleteBtn + '</p>' +
+        (data.body ? '<p class="mt-2 text-sm text-[#64748b]">' + escapeHtml(data.body) + '</p>' : '') +
+        '</div>';
+}
+
+async function loadThreads() {
+    var list = document.getElementById('thread-list');
+    if (!list) return;
+
+    try {
+        var snapshot = await db.collection('threads').orderBy('createdAt', 'desc').limit(50).get();
+        var admin = isAdmin();
+        var userId = currentUser ? currentUser.uid : null;
+
+        if (snapshot.empty) {
+            list.innerHTML = '<div class="text-center py-8 text-[#94A1B0]">No discussions yet. Start the first thread!</div>';
+            return;
+        }
+
+        var html = '';
+        snapshot.forEach(function(doc) {
+            html += renderThreadItem(doc, admin, userId);
+        });
+        list.innerHTML = html;
+    } catch (e) {
+        console.error('Error loading threads:', e);
+        list.innerHTML = '<div class="text-center py-8 text-red-500">Error loading discussions. Please refresh the page.</div>';
+    }
+}
+
+async function addThread(title, body) {
+    try {
+        var auth = getAuth();
+        await db.collection('threads').add({
+            title: title,
+            body: body,
+            authorId: currentUser ? currentUser.uid : null,
+            authorName: auth ? auth.name : 'Anonymous',
+            replyCount: 0,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        return { success: true };
+    } catch (e) {
+        console.error('Error adding thread:', e);
+        return { success: false, message: e.message };
+    }
+}
+
+async function deleteThread(threadId) {
+    if (!confirm('Are you sure you want to delete this thread?')) return;
+
+    try {
+        await db.collection('threads').doc(threadId).delete();
+        var item = document.querySelector('.thread-card[data-id="' + threadId + '"]');
+        if (item) item.remove();
+    } catch (e) {
+        console.error('Error deleting thread:', e);
+        alert('Failed to delete thread. Please try again.');
+    }
+}
+
 function initForum() {
+    // Load threads from Firestore
+    loadThreads();
+
+    // Handle new thread form
     var form = document.getElementById('new-thread-form');
     if (!form) return;
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         var title = document.getElementById('thread-title').value.trim();
-        var body  = document.getElementById('thread-body').value.trim();
+        var body = document.getElementById('thread-body').value.trim();
+        var btn = form.querySelector('button[type="submit"]');
+        var success = document.getElementById('thread-success');
+        var error = document.getElementById('thread-error');
+
         if (!title) return;
 
-        var auth = getAuth();
-        var list = document.getElementById('thread-list');
-        var div  = document.createElement('div');
-        div.className = 'thread-card bg-white rounded-lg p-4 shadow-sm';
-        div.innerHTML =
-            '<div class="flex justify-between items-start">' +
-            '<h4 class="font-semibold text-[#063559]">' + title + '</h4>' +
-            '<span class="badge badge-new">New</span></div>' +
-            '<p class="text-[#7E8994] text-xs mt-1">Posted by ' + (auth ? auth.name : 'You') + ' &mdash; just now &middot; 0 replies</p>' +
-            (body ? '<p class="mt-2 text-sm text-[#64748b]">' + body + '</p>' : '');
-        list.insertBefore(div, list.firstChild);
-        form.reset();
+        btn.disabled = true;
+        btn.textContent = 'Posting...';
+        if (success) success.classList.add('hidden');
+        if (error) error.classList.add('hidden');
+
+        var result = await addThread(title, body);
+
+        if (result.success) {
+            if (success) success.classList.remove('hidden');
+            form.reset();
+            document.getElementById('new-thread-panel').classList.add('hidden');
+            loadThreads(); // Refresh the list
+            if (success) setTimeout(function() { success.classList.add('hidden'); }, 3000);
+        } else {
+            if (error) {
+                error.textContent = result.message || 'Failed to post thread.';
+                error.classList.remove('hidden');
+            }
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Post';
     });
 }
 
