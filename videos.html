@@ -76,103 +76,56 @@
             <p class="text-[#94A1B0] text-sm mt-1">Community videos, tutorials, and event recordings</p>
         </div>
 
-        <!-- Video Grid -->
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
-            <!-- Video Card 1 -->
-            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
-                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
-                    <!-- YouTube placeholder (replace src with real embed URL) -->
-                    <div class="text-center">
-                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                        <p class="text-white text-xs opacity-60">YouTube Video</p>
+        <!-- Admin: Add Video Form -->
+        <div id="video-add-form" class="admin-only bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
+            <h3 class="font-semibold text-[#063559] mb-3">Add New Video</h3>
+            <form id="add-video-form" class="space-y-3">
+                <div class="grid md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Video Title</label>
+                        <input type="text" id="video-title" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="e.g., Winter Road Maintenance Tutorial">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Category</label>
+                        <select id="video-category" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                            <option value="tutorial">Tutorial</option>
+                            <option value="event">Event</option>
+                            <option value="community">Community</option>
+                            <option value="safety">Safety</option>
+                        </select>
                     </div>
                 </div>
-                <div class="p-4">
-                    <h3 class="font-semibold text-[#063559] text-sm">Winter Road Maintenance Tutorial</h3>
-                    <p class="text-[#7E8994] text-xs mt-1">How to safely clear snow and ice from your access road.</p>
-                    <p class="text-[#94A1B0] text-xs mt-2">Posted Dec 15, 2025</p>
+                <div>
+                    <label class="block text-xs font-medium text-[#7E8994] mb-1">Description</label>
+                    <input type="text" id="video-desc" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="Brief description of the video">
                 </div>
-            </div>
-
-            <!-- Video Card 2 -->
-            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
-                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
-                    <div class="text-center">
-                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                        <p class="text-white text-xs opacity-60">YouTube Video</p>
-                    </div>
+                <div>
+                    <label class="block text-xs font-medium text-[#7E8994] mb-1">YouTube URL</label>
+                    <input type="url" id="video-url" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="https://www.youtube.com/watch?v=...">
                 </div>
-                <div class="p-4">
-                    <h3 class="font-semibold text-[#063559] text-sm">November Work Party Recap</h3>
-                    <p class="text-[#7E8994] text-xs mt-1">Highlights from the November community work party and road improvements.</p>
-                    <p class="text-[#94A1B0] text-xs mt-2">Posted Nov 25, 2025</p>
+                <div class="flex items-center gap-3">
+                    <button type="submit" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold">Add Video</button>
+                    <p id="video-success" class="hidden text-green-600 text-xs">Video added successfully!</p>
+                    <p id="video-error" class="hidden text-red-600 text-xs"></p>
                 </div>
-            </div>
-
-            <!-- Video Card 3 -->
-            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
-                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
-                    <div class="text-center">
-                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                        <p class="text-white text-xs opacity-60">YouTube Video</p>
-                    </div>
-                </div>
-                <div class="p-4">
-                    <h3 class="font-semibold text-[#063559] text-sm">Gate Code Keypad Demo</h3>
-                    <p class="text-[#7E8994] text-xs mt-1">Quick walkthrough on how to use the IEP chain gate keypad.</p>
-                    <p class="text-[#94A1B0] text-xs mt-2">Posted Oct 10, 2025</p>
-                </div>
-            </div>
-
-            <!-- Video Card 4 -->
-            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
-                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
-                    <div class="text-center">
-                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                        <p class="text-white text-xs opacity-60">YouTube Video</p>
-                    </div>
-                </div>
-                <div class="p-4">
-                    <h3 class="font-semibold text-[#063559] text-sm">Annual Meeting 2025 Highlights</h3>
-                    <p class="text-[#7E8994] text-xs mt-1">Key decisions and updates from the 2025 annual landowners meeting.</p>
-                    <p class="text-[#94A1B0] text-xs mt-2">Posted Sep 5, 2025</p>
-                </div>
-            </div>
-
-            <!-- Video Card 5 -->
-            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
-                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
-                    <div class="text-center">
-                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                        <p class="text-white text-xs opacity-60">YouTube Video</p>
-                    </div>
-                </div>
-                <div class="p-4">
-                    <h3 class="font-semibold text-[#063559] text-sm">Mount Spokane Scenic Drive Tour</h3>
-                    <p class="text-[#7E8994] text-xs mt-1">A scenic drive through the community showing all access roads and views.</p>
-                    <p class="text-[#94A1B0] text-xs mt-2">Posted Aug 18, 2025</p>
-                </div>
-            </div>
-
-            <!-- Video Card 6 -->
-            <div class="card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
-                <div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">
-                    <div class="text-center">
-                        <svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                        <p class="text-white text-xs opacity-60">YouTube Video</p>
-                    </div>
-                </div>
-                <div class="p-4">
-                    <h3 class="font-semibold text-[#063559] text-sm">Fire Safety &amp; Prevention Guide</h3>
-                    <p class="text-[#7E8994] text-xs mt-1">Wildfire prevention tips and emergency evacuation routes for our area.</p>
-                    <p class="text-[#94A1B0] text-xs mt-2">Posted Jul 4, 2025</p>
-                </div>
-            </div>
-
+            </form>
         </div>
 
-        <p class="text-[#7E8994] text-xs mt-6">To add a YouTube video, contact the admin with the video URL.</p>
+        <!-- Category filter -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
+            <div class="flex flex-wrap gap-2">
+                <button class="vid-pill active" data-cat="all">All</button>
+                <button class="vid-pill" data-cat="tutorial">Tutorial</button>
+                <button class="vid-pill" data-cat="event">Event</button>
+                <button class="vid-pill" data-cat="community">Community</button>
+                <button class="vid-pill" data-cat="safety">Safety</button>
+            </div>
+        </div>
+
+        <!-- Video Grid (loaded from Firestore) -->
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" id="video-list">
+            <div class="col-span-full text-center py-8 text-[#94A1B0]">Loading videos...</div>
+        </div>
     </div>
 </main>
 
@@ -191,7 +144,10 @@
 </footer>
 
 <script src="script.js"></script>
-<script>document.addEventListener('DOMContentLoaded', async function() { await requireAuth(); });</script>
+<script>document.addEventListener('DOMContentLoaded', async function() {
+    await requireAuth();
+    loadVideos(); // Reload videos now that auth state is known
+});</script>
 </body>
 </html>
 

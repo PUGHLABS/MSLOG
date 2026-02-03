@@ -166,8 +166,8 @@ html {
 /* Admin-only elements hidden until JS reveals them */
 .admin-only { display: none; }
 
-/* Doc category pills */
-.cat-pill {
+/* Category filter pills */
+.cat-pill, .vid-pill {
     display: inline-block;
     padding: 4px 12px;
     border-radius: 20px;
@@ -176,14 +176,14 @@ html {
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
 }
-.cat-pill.active {
+.cat-pill.active, .vid-pill.active {
     background-color: #063559;
     color: white;
 }
-.cat-pill:not(.active) {
+.cat-pill:not(.active), .vid-pill:not(.active) {
     background-color: #e2e8f0;
     color: #7E8994;
 }
-.cat-pill:not(.active):hover {
+.cat-pill:not(.active):hover, .vid-pill:not(.active):hover {
     background-color: #cbd5e1;
 }

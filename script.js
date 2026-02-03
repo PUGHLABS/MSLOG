@@ -515,6 +515,188 @@ function initDocFilter() {
     });
 }
 
+// ─── Videos (Firestore CRUD) ─────────────────────────────────────
+var videoCategoryColors = {
+    tutorial: '#063559',
+    event: '#7E8994',
+    community: '#F9812A',
+    safety: '#dc2626'
+};
+
+var videoCategoryBadges = {
+    tutorial: 'badge-admin',
+    event: 'badge-member',
+    community: 'badge-new',
+    safety: 'badge-pending'
+};
+
+function extractYouTubeId(url) {
+    if (!url) return null;
+    var match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
+}
+
+function renderVideoItem(doc, isAdmin) {
+    var data = doc.data();
+    var cat = data.category || 'community';
+    var dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown date';
+    var videoId = extractYouTubeId(data.url);
+
+    var deleteBtn = isAdmin ?
+        '<button onclick="deleteVideo(\'' + doc.id + '\')" class="text-red-500 hover:text-red-700 text-xs font-semibold">Delete</button>' : '';
+
+    var videoEmbed = videoId ?
+        '<iframe class="w-full h-full" src="https://www.youtube.com/embed/' + videoId + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' :
+        '<div class="text-center"><svg class="w-12 h-12 text-white opacity-60 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg><p class="text-white text-xs opacity-60">Invalid URL</p></div>';
+
+    return '<div class="video-item card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden" data-cat="' + cat + '" data-id="' + doc.id + '">' +
+        '<div class="video-aspect bg-[#1a1a2e] flex items-center justify-center">' + videoEmbed + '</div>' +
+        '<div class="p-4">' +
+        '<div class="flex flex-wrap items-center gap-2 mb-1">' +
+        '<h3 class="font-semibold text-[#063559] text-sm">' + escapeHtml(data.title) + '</h3>' +
+        '<span class="badge ' + (videoCategoryBadges[cat] || 'badge-member') + '">' + cat.charAt(0).toUpperCase() + cat.slice(1) + '</span>' +
+        '</div>' +
+        '<p class="text-[#7E8994] text-xs mt-1">' + escapeHtml(data.description || '') + '</p>' +
+        '<div class="flex items-center justify-between mt-2">' +
+        '<span class="text-[#94A1B0] text-xs">Posted ' + dateStr + '</span>' +
+        deleteBtn +
+        '</div></div></div>';
+}
+
+async function loadVideos() {
+    var list = document.getElementById('video-list');
+    if (!list) return;
+
+    try {
+        var snapshot = await db.collection('videos').orderBy('createdAt', 'desc').get();
+        var admin = isAdmin();
+
+        if (snapshot.empty) {
+            list.innerHTML = '<div class="col-span-full text-center py-8 text-[#94A1B0]">No videos yet. Admins can add videos using the form above.</div>';
+            return;
+        }
+
+        var html = '';
+        snapshot.forEach(function(doc) {
+            html += renderVideoItem(doc, admin);
+        });
+        list.innerHTML = html;
+
+        // Re-apply current filter
+        var activeFilter = document.querySelector('.vid-pill.active');
+        if (activeFilter) {
+            var cat = activeFilter.getAttribute('data-cat');
+            if (cat !== 'all') {
+                document.querySelectorAll('.video-item').forEach(function(item) {
+                    item.style.display = item.getAttribute('data-cat') === cat ? 'block' : 'none';
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Error loading videos:', e);
+        list.innerHTML = '<div class="col-span-full text-center py-8 text-red-500">Error loading videos. Please refresh the page.</div>';
+    }
+}
+
+async function addVideo(title, category, description, url) {
+    try {
+        await db.collection('videos').add({
+            title: title,
+            category: category,
+            description: description,
+            url: url,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: currentUser ? currentUser.uid : null
+        });
+        return { success: true };
+    } catch (e) {
+        console.error('Error adding video:', e);
+        return { success: false, message: e.message };
+    }
+}
+
+async function deleteVideo(videoId) {
+    if (!confirm('Are you sure you want to delete this video?')) return;
+
+    try {
+        await db.collection('videos').doc(videoId).delete();
+        var item = document.querySelector('.video-item[data-id="' + videoId + '"]');
+        if (item) item.remove();
+    } catch (e) {
+        console.error('Error deleting video:', e);
+        alert('Failed to delete video. Please try again.');
+    }
+}
+
+function initVideos() {
+    // Load videos from Firestore
+    loadVideos();
+
+    // Handle add video form
+    var form = document.getElementById('add-video-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var title = document.getElementById('video-title').value.trim();
+        var category = document.getElementById('video-category').value;
+        var desc = document.getElementById('video-desc').value.trim();
+        var url = document.getElementById('video-url').value.trim();
+        var btn = form.querySelector('button[type="submit"]');
+        var success = document.getElementById('video-success');
+        var error = document.getElementById('video-error');
+
+        // Validate YouTube URL
+        if (!extractYouTubeId(url)) {
+            error.textContent = 'Please enter a valid YouTube URL.';
+            error.classList.remove('hidden');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Adding...';
+        success.classList.add('hidden');
+        error.classList.add('hidden');
+
+        var result = await addVideo(title, category, desc, url);
+
+        if (result.success) {
+            success.classList.remove('hidden');
+            form.reset();
+            loadVideos(); // Refresh the list
+            setTimeout(function() { success.classList.add('hidden'); }, 3000);
+        } else {
+            error.textContent = result.message || 'Failed to add video.';
+            error.classList.remove('hidden');
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Add Video';
+    });
+}
+
+// ─── Videos category filter ──────────────────────────────────────
+function initVideoFilter() {
+    var pills = document.querySelectorAll('.vid-pill');
+    if (!pills.length) return;
+
+    pills.forEach(function(pill) {
+        pill.addEventListener('click', function() {
+            pills.forEach(function(p) { p.classList.remove('active'); });
+            this.classList.add('active');
+
+            var cat = this.getAttribute('data-cat');
+            document.querySelectorAll('.video-item').forEach(function(item) {
+                if (cat === 'all' || item.getAttribute('data-cat') === cat) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+}
+
 // ─── Forum — new thread (mock) ───────────────────────────────────
 function initForum() {
     var form = document.getElementById('new-thread-form');
@@ -632,6 +814,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initSearch();
     initDocuments();
     initDocFilter();
+    initVideos();
+    initVideoFilter();
     initForum();
     initGateCode();
     initQRCode();
