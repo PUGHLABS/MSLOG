@@ -339,10 +339,9 @@ async function loadMembers() {
     if (!tbody) return;
 
     try {
-        // Get all approved members, sorted by name
+        // Get all approved members
         var snapshot = await db.collection('members')
             .where('status', '==', 'approved')
-            .orderBy('name', 'asc')
             .get();
 
         if (snapshot.empty) {
@@ -351,15 +350,24 @@ async function loadMembers() {
             return;
         }
 
-        var html = '';
-        var count = 0;
+        // Sort client-side by name (avoids needing composite index)
+        var members = [];
         snapshot.forEach(function(doc) {
+            members.push(doc);
+        });
+        members.sort(function(a, b) {
+            var nameA = (a.data().name || '').toLowerCase();
+            var nameB = (b.data().name || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+
+        var html = '';
+        members.forEach(function(doc) {
             html += renderMemberRow(doc);
-            count++;
         });
         tbody.innerHTML = html;
 
-        if (countEl) countEl.textContent = 'Showing ' + count + ' member' + (count !== 1 ? 's' : '') + '.';
+        if (countEl) countEl.textContent = 'Showing ' + members.length + ' member' + (members.length !== 1 ? 's' : '') + '.';
     } catch (e) {
         console.error('Error loading members:', e);
         tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">Error loading members. Please refresh the page.</td></tr>';
