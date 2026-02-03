@@ -75,7 +75,8 @@ async function registerWithEmail(email, password, profileData) {
             name: profileData.name,
             lot: profileData.lot,
             phone: profileData.phone || '',
-            role: 'pending', // Admin must approve
+            role: 'member',
+            status: 'pending', // Admin must approve
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         return { success: true };
@@ -339,18 +340,10 @@ async function loadMembers() {
     if (!tbody) return;
 
     try {
-        // Debug: First get ALL members to see what's there
-        var allSnapshot = await db.collection('members').get();
-        console.log('Total members in collection:', allSnapshot.size);
-        allSnapshot.forEach(function(doc) {
-            console.log('Member:', doc.id, doc.data());
-        });
-
         // Get all approved members
         var snapshot = await db.collection('members')
             .where('status', '==', 'approved')
             .get();
-        console.log('Approved members:', snapshot.size);
 
         if (snapshot.empty) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-[#94A1B0]">No members found.</td></tr>';
