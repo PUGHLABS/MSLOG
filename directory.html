@@ -94,83 +94,14 @@
                         <th>Role</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>Robert Admin</td>
-                        <td>58221.0137</td>
-                        <td>admin@mslog.org</td>
-                        <td>(509) 555-0100</td>
-                        <td><span class="badge badge-admin">Admin</span></td>
-                    </tr>
-                    <tr>
-                        <td>Jane Smith</td>
-                        <td>58221.0138</td>
-                        <td>jane@mslog.org</td>
-                        <td>(509) 555-0101</td>
-                        <td><span class="badge badge-member">Member</span></td>
-                    </tr>
-                    <tr>
-                        <td>Tom Wilson</td>
-                        <td>58221.0142</td>
-                        <td>tom.wilson@email.com</td>
-                        <td>(509) 555-0110</td>
-                        <td><span class="badge badge-member">Member</span></td>
-                    </tr>
-                    <tr>
-                        <td>Sarah Johnson</td>
-                        <td>58221.0155</td>
-                        <td>sarah.j@email.com</td>
-                        <td>(509) 555-0122</td>
-                        <td><span class="badge badge-member">Member</span></td>
-                    </tr>
-                    <tr>
-                        <td>Mike &amp; Linda Davis</td>
-                        <td>58221.0161</td>
-                        <td>davis.family@email.com</td>
-                        <td>(509) 555-0133</td>
-                        <td><span class="badge badge-member">Member</span></td>
-                    </tr>
-                    <tr>
-                        <td>Karen Thompson</td>
-                        <td>58221.0174</td>
-                        <td>k.thompson@email.com</td>
-                        <td>(509) 555-0145</td>
-                        <td><span class="badge badge-member">Member</span></td>
-                    </tr>
-                    <tr>
-                        <td>Bill &amp; Nancy Martinez</td>
-                        <td>58221.0188</td>
-                        <td>martinez@email.com</td>
-                        <td>(509) 555-0156</td>
-                        <td><span class="badge badge-member">Member</span></td>
-                    </tr>
-                    <tr>
-                        <td>Doug Harris</td>
-                        <td>58221.0193</td>
-                        <td>d.harris@email.com</td>
-                        <td>(509) 555-0167</td>
-                        <td><span class="badge badge-member">Member</span></td>
-                    </tr>
-                    <tr>
-                        <td>Lisa Chen</td>
-                        <td>58221.0201</td>
-                        <td>lisa.chen@email.com</td>
-                        <td>(509) 555-0178</td>
-                        <td><span class="badge badge-member">Member</span></td>
-                    </tr>
-                    <tr>
-                        <td>James &amp; Patricia Clark</td>
-                        <td>58221.0215</td>
-                        <td>clark.jp@email.com</td>
-                        <td>(509) 555-0189</td>
-                        <td><span class="badge badge-member">Member</span></td>
-                    </tr>
+                <tbody id="dir-tbody">
+                    <tr><td colspan="5" class="text-center py-8 text-[#94A1B0]">Loading members...</td></tr>
                 </tbody>
             </table>
             <p id="dir-no-results" class="hidden text-[#7E8994] text-sm text-center py-6">No members match your search.</p>
         </div>
 
-        <p class="text-[#7E8994] text-xs mt-3">Showing 10 of 47 members. Contact the admin to add or update entries.</p>
+        <p id="dir-count" class="text-[#7E8994] text-xs mt-3"></p>
     </div>
 </main>
 
@@ -189,7 +120,10 @@
 </footer>
 
 <script src="script.js"></script>
-<script>document.addEventListener('DOMContentLoaded', async function() { await requireAuth(); });</script>
+<script>document.addEventListener('DOMContentLoaded', async function() {
+    await requireAuth();
+    loadMembers(); // Load members after auth
+});</script>
 </body>
 </html>
 

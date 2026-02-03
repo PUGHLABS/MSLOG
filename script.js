@@ -317,6 +317,55 @@ function initCalendar() {
     el.innerHTML = html;
 }
 
+// ─── Member Directory (Firestore) ────────────────────────────────
+function renderMemberRow(doc) {
+    var data = doc.data();
+    var role = data.role || 'member';
+    var badgeClass = role === 'admin' ? 'badge-admin' : 'badge-member';
+    var badgeText = role.charAt(0).toUpperCase() + role.slice(1);
+
+    return '<tr data-id="' + doc.id + '">' +
+        '<td>' + escapeHtml(data.name || 'Unknown') + '</td>' +
+        '<td>' + escapeHtml(data.lot || '—') + '</td>' +
+        '<td>' + escapeHtml(data.email || '—') + '</td>' +
+        '<td>' + escapeHtml(data.phone || '—') + '</td>' +
+        '<td><span class="badge ' + badgeClass + '">' + badgeText + '</span></td>' +
+        '</tr>';
+}
+
+async function loadMembers() {
+    var tbody = document.getElementById('dir-tbody');
+    var countEl = document.getElementById('dir-count');
+    if (!tbody) return;
+
+    try {
+        // Get all approved members, sorted by name
+        var snapshot = await db.collection('members')
+            .where('status', '==', 'approved')
+            .orderBy('name', 'asc')
+            .get();
+
+        if (snapshot.empty) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-[#94A1B0]">No members found.</td></tr>';
+            if (countEl) countEl.textContent = '';
+            return;
+        }
+
+        var html = '';
+        var count = 0;
+        snapshot.forEach(function(doc) {
+            html += renderMemberRow(doc);
+            count++;
+        });
+        tbody.innerHTML = html;
+
+        if (countEl) countEl.textContent = 'Showing ' + count + ' member' + (count !== 1 ? 's' : '') + '.';
+    } catch (e) {
+        console.error('Error loading members:', e);
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-red-500">Error loading members. Please refresh the page.</td></tr>';
+    }
+}
+
 // ─── Directory search / filter ───────────────────────────────────
 function initSearch() {
     var input = document.getElementById('dir-search');
