@@ -335,6 +335,164 @@ function initSearch() {
     });
 }
 
+// ─── Documents (Firestore CRUD) ──────────────────────────────────
+var docCategoryColors = {
+    bylaws: '#063559',
+    minutes: '#7E8994',
+    resources: '#F9812A',
+    maps: '#94A1B0'
+};
+
+var docCategoryBadges = {
+    bylaws: 'badge-admin',
+    minutes: 'badge-member',
+    resources: 'badge-new',
+    maps: 'badge-pending'
+};
+
+var docCategoryIcons = {
+    bylaws: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h12m-6-8h.01M5 8h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2z"></path></svg>',
+    minutes: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>',
+    resources: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>',
+    maps: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>'
+};
+
+function renderDocItem(doc, isAdmin) {
+    var data = doc.data();
+    var cat = data.category || 'resources';
+    var dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown date';
+
+    var deleteBtn = isAdmin ?
+        '<button onclick="deleteDocument(\'' + doc.id + '\')" class="text-red-500 hover:text-red-700 text-xs font-semibold ml-auto">Delete</button>' : '';
+
+    return '<div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="' + cat + '" data-id="' + doc.id + '">' +
+        '<div class="text-white rounded-lg p-3 flex-shrink-0" style="background-color: ' + (docCategoryColors[cat] || '#7E8994') + '">' +
+        (docCategoryIcons[cat] || docCategoryIcons.resources) +
+        '</div>' +
+        '<div class="flex-1 min-w-0">' +
+        '<div class="flex flex-wrap items-center gap-2 mb-1">' +
+        '<h3 class="font-semibold text-[#063559]">' + escapeHtml(data.title) + '</h3>' +
+        '<span class="badge ' + (docCategoryBadges[cat] || 'badge-member') + '">' + cat.charAt(0).toUpperCase() + cat.slice(1) + '</span>' +
+        '</div>' +
+        '<p class="text-[#7E8994] text-xs">' + escapeHtml(data.description || '') + '</p>' +
+        '<div class="flex items-center gap-4 mt-2">' +
+        '<span class="text-[#94A1B0] text-xs">Posted ' + dateStr + '</span>' +
+        '<a href="' + escapeHtml(data.url || '#') + '" target="_blank" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>' +
+        deleteBtn +
+        '</div></div></div>';
+}
+
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+async function loadDocuments() {
+    var list = document.getElementById('doc-list');
+    if (!list) return;
+
+    try {
+        var snapshot = await db.collection('documents').orderBy('createdAt', 'desc').get();
+        var admin = isAdmin();
+
+        if (snapshot.empty) {
+            list.innerHTML = '<div class="text-center py-8 text-[#94A1B0]">No documents yet. Admins can add documents using the form above.</div>';
+            return;
+        }
+
+        var html = '';
+        snapshot.forEach(function(doc) {
+            html += renderDocItem(doc, admin);
+        });
+        list.innerHTML = html;
+
+        // Re-apply current filter
+        var activeFilter = document.querySelector('.cat-pill.active');
+        if (activeFilter) {
+            var cat = activeFilter.getAttribute('data-cat');
+            if (cat !== 'all') {
+                document.querySelectorAll('.doc-item').forEach(function(item) {
+                    item.style.display = item.getAttribute('data-cat') === cat ? 'flex' : 'none';
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Error loading documents:', e);
+        list.innerHTML = '<div class="text-center py-8 text-red-500">Error loading documents. Please refresh the page.</div>';
+    }
+}
+
+async function addDocument(title, category, description, url) {
+    try {
+        await db.collection('documents').add({
+            title: title,
+            category: category,
+            description: description,
+            url: url,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: currentUser ? currentUser.uid : null
+        });
+        return { success: true };
+    } catch (e) {
+        console.error('Error adding document:', e);
+        return { success: false, message: e.message };
+    }
+}
+
+async function deleteDocument(docId) {
+    if (!confirm('Are you sure you want to delete this document?')) return;
+
+    try {
+        await db.collection('documents').doc(docId).delete();
+        var item = document.querySelector('.doc-item[data-id="' + docId + '"]');
+        if (item) item.remove();
+    } catch (e) {
+        console.error('Error deleting document:', e);
+        alert('Failed to delete document. Please try again.');
+    }
+}
+
+function initDocuments() {
+    // Load documents from Firestore
+    loadDocuments();
+
+    // Handle add document form
+    var form = document.getElementById('add-doc-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var title = document.getElementById('doc-title').value.trim();
+        var category = document.getElementById('doc-category').value;
+        var desc = document.getElementById('doc-desc').value.trim();
+        var url = document.getElementById('doc-url').value.trim();
+        var btn = form.querySelector('button[type="submit"]');
+        var success = document.getElementById('doc-success');
+        var error = document.getElementById('doc-error');
+
+        btn.disabled = true;
+        btn.textContent = 'Adding...';
+        success.classList.add('hidden');
+        error.classList.add('hidden');
+
+        var result = await addDocument(title, category, desc, url);
+
+        if (result.success) {
+            success.classList.remove('hidden');
+            form.reset();
+            loadDocuments(); // Refresh the list
+            setTimeout(function() { success.classList.add('hidden'); }, 3000);
+        } else {
+            error.textContent = result.message || 'Failed to add document.';
+            error.classList.remove('hidden');
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Add Document';
+    });
+}
+
 // ─── Documents category filter ───────────────────────────────────
 function initDocFilter() {
     var pills = document.querySelectorAll('.cat-pill');
@@ -472,6 +630,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initWeather();
     initCalendar();
     initSearch();
+    initDocuments();
     initDocFilter();
     initForum();
     initGateCode();

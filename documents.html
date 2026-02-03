@@ -76,6 +76,41 @@
             <p class="text-[#94A1B0] text-sm mt-1">Bylaws, meeting minutes, maps, and shared resources</p>
         </div>
 
+        <!-- Admin: Add Document Form -->
+        <div id="doc-add-form" class="admin-only bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
+            <h3 class="font-semibold text-[#063559] mb-3">Add New Document</h3>
+            <form id="add-doc-form" class="space-y-3">
+                <div class="grid md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Document Title</label>
+                        <input type="text" id="doc-title" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="e.g., January 2026 Meeting Minutes">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Category</label>
+                        <select id="doc-category" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                            <option value="bylaws">Bylaws</option>
+                            <option value="minutes">Minutes</option>
+                            <option value="resources">Resources</option>
+                            <option value="maps">Maps</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-[#7E8994] mb-1">Description</label>
+                    <input type="text" id="doc-desc" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="Brief description of the document">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-[#7E8994] mb-1">Download URL (PDF link)</label>
+                    <input type="url" id="doc-url" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="https://drive.google.com/...">
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="submit" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold">Add Document</button>
+                    <p id="doc-success" class="hidden text-green-600 text-xs">Document added successfully!</p>
+                    <p id="doc-error" class="hidden text-red-600 text-xs"></p>
+                </div>
+            </form>
+        </div>
+
         <!-- Category filter -->
         <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
             <div class="flex flex-wrap gap-2">
@@ -87,145 +122,9 @@
             </div>
         </div>
 
-        <!-- Document list -->
+        <!-- Document list (loaded from Firestore) -->
         <div class="space-y-3" id="doc-list">
-
-            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="bylaws">
-                <div class="bg-[#063559] text-white rounded-lg p-3 flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h12m-6-8h.01M5 8h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2z"></path></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 class="font-semibold text-[#063559]">CC&amp;R — Covenants, Conditions &amp; Restrictions</h3>
-                        <span class="badge badge-admin">Bylaws</span>
-                    </div>
-                    <p class="text-[#7E8994] text-xs">Original governing document for the Mount Spokane landowners association.</p>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span class="text-[#94A1B0] text-xs">Updated Jan 15, 2026</span>
-                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="bylaws">
-                <div class="bg-[#063559] text-white rounded-lg p-3 flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h12m-6-8h.01M5 8h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2z"></path></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 class="font-semibold text-[#063559]">Association Bylaws — Article I through VIII</h3>
-                        <span class="badge badge-admin">Bylaws</span>
-                    </div>
-                    <p class="text-[#7E8994] text-xs">Full bylaws governing meeting procedures, voting, and membership rules.</p>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span class="text-[#94A1B0] text-xs">Updated Dec 8, 2025</span>
-                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="minutes">
-                <div class="bg-[#7E8994] text-white rounded-lg p-3 flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 class="font-semibold text-[#063559]">January 2026 Monthly Meeting Minutes</h3>
-                        <span class="badge badge-member">Minutes</span>
-                    </div>
-                    <p class="text-[#7E8994] text-xs">Minutes from the January 8 meeting. Discussed road maintenance and spring work party planning.</p>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span class="text-[#94A1B0] text-xs">Posted Jan 10, 2026</span>
-                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="minutes">
-                <div class="bg-[#7E8994] text-white rounded-lg p-3 flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 class="font-semibold text-[#063559]">December 2025 Monthly Meeting Minutes</h3>
-                        <span class="badge badge-member">Minutes</span>
-                    </div>
-                    <p class="text-[#7E8994] text-xs">Minutes from the December 4 meeting. Budget review and holiday potluck recap.</p>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span class="text-[#94A1B0] text-xs">Posted Dec 6, 2025</span>
-                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="resources">
-                <div class="bg-[#F9812A] text-white rounded-lg p-3 flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 class="font-semibold text-[#063559]">Emergency Contact &amp; Procedures Guide</h3>
-                        <span class="badge badge-new">Resources</span>
-                    </div>
-                    <p class="text-[#7E8994] text-xs">Fire, medical, and road emergency procedures for the Mount Spokane area. Updated 2025.</p>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span class="text-[#94A1B0] text-xs">Updated Nov 20, 2025</span>
-                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="resources">
-                <div class="bg-[#F9812A] text-white rounded-lg p-3 flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 class="font-semibold text-[#063559]">Snow Removal &amp; Road Maintenance Schedule</h3>
-                        <span class="badge badge-new">Resources</span>
-                    </div>
-                    <p class="text-[#7E8994] text-xs">Winter 2025–2026 maintenance schedule for all community roads.</p>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span class="text-[#94A1B0] text-xs">Posted Dec 1, 2025</span>
-                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="maps">
-                <div class="bg-[#94A1B0] text-white rounded-lg p-3 flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.293-5.293a1 1 0 010-1.414L9 8l7 7-2.586 2.586a1 1 0 01-1.414 0L9 14.414 3.414 20.828A1 1 0 012 20z"></path></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 class="font-semibold text-[#063559]">Property Lot Map — Full Community</h3>
-                        <span class="badge badge-pending">Maps</span>
-                    </div>
-                    <p class="text-[#7E8994] text-xs">Overview map showing all lot numbers and property boundaries in the association.</p>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span class="text-[#94A1B0] text-xs">Updated Oct 5, 2025</span>
-                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="doc-item flex items-start gap-4 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-cat="maps">
-                <div class="bg-[#94A1B0] text-white rounded-lg p-3 flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.293-5.293a1 1 0 010-1.414L9 8l7 7-2.586 2.586a1 1 0 01-1.414 0L9 14.414 3.414 20.828A1 1 0 012 20z"></path></svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 class="font-semibold text-[#063559]">Road &amp; Trail Network Map</h3>
-                        <span class="badge badge-pending">Maps</span>
-                    </div>
-                    <p class="text-[#7E8994] text-xs">All maintained roads, trails, and access points within the Mount Spokane community.</p>
-                    <div class="flex items-center gap-4 mt-2">
-                        <span class="text-[#94A1B0] text-xs">Updated Sep 12, 2025</span>
-                        <a href="#" class="text-[#F9812A] text-xs font-semibold hover:underline">Download PDF →</a>
-                    </div>
-                </div>
-            </div>
-
+            <div class="text-center py-8 text-[#94A1B0]">Loading documents...</div>
         </div>
     </div>
 </main>
@@ -245,7 +144,10 @@
 </footer>
 
 <script src="script.js"></script>
-<script>document.addEventListener('DOMContentLoaded', async function() { await requireAuth(); });</script>
+<script>document.addEventListener('DOMContentLoaded', async function() {
+    await requireAuth();
+    loadDocuments(); // Reload documents now that auth state is known
+});</script>
 </body>
 </html>
 
