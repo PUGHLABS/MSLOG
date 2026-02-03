@@ -292,13 +292,12 @@ function initCalendar() {
     var firstDay = new Date(y, m, 1).getDay();
     var daysIn   = new Date(y, m + 1, 0).getDate();
 
-    // Mock recurring events by day-of-month
-    var events = {
-        5:  ['Monthly Meeting — 7:00 PM'],
-        12: ['Work Party — 9:00 AM'],
-        19: ['Board Meeting — 6:00 PM'],
-        26: ['Community Potluck — 5:00 PM']
-    };
+    // Helper to format date as YYYY-MM-DD
+    function dateKey(day) {
+        var mm = String(m + 1).padStart(2, '0');
+        var dd = String(day).padStart(2, '0');
+        return y + '-' + mm + '-' + dd;
+    }
 
     var html = '<div class="flex justify-between items-center mb-4">' +
         '<h3 class="text-lg font-bold text-[#063559]">' + months[m] + ' ' + y + '</h3></div>';
@@ -308,8 +307,10 @@ function initCalendar() {
 
     for (var i = 0; i < firstDay; i++) { html += '<div class="cal-day empty"></div>'; }
     for (var d = 1; d <= daysIn; d++) {
-        var cls   = (d === today ? ' today' : '') + (events[d] ? ' has-event' : '');
-        var title = events[d] ? ' title="' + events[d].join('; ') + '"' : '';
+        var key = dateKey(d);
+        var dayEvents = calendarEvents[key] || [];
+        var cls   = (d === today ? ' today' : '') + (dayEvents.length ? ' has-event' : '');
+        var title = dayEvents.length ? ' title="' + dayEvents.join('; ') + '"' : '';
         html += '<div class="cal-day' + cls + '"' + title + '><span class="text-sm">' + d + '</span></div>';
     }
     html += '</div>';
@@ -697,6 +698,169 @@ function initVideoFilter() {
     });
 }
 
+// ─── Calendar Events (Firestore CRUD) ────────────────────────────
+var calendarEvents = {}; // Cache events by date key (YYYY-MM-DD)
+
+function formatTime12(time24) {
+    if (!time24) return '';
+    var parts = time24.split(':');
+    var h = parseInt(parts[0], 10);
+    var m = parts[1];
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + m + ' ' + ampm;
+}
+
+function renderEventItem(doc, isAdmin) {
+    var data = doc.data();
+    var eventDate = data.date ? new Date(data.date + 'T00:00:00') : new Date();
+    var day = eventDate.getDate();
+    var isUpcoming = eventDate >= new Date(new Date().setHours(0, 0, 0, 0));
+
+    var deleteBtn = isAdmin ?
+        '<button onclick="deleteEvent(\'' + doc.id + '\')" class="text-red-500 hover:text-red-700 text-xs font-semibold mt-1">Delete</button>' : '';
+
+    var bgColor = isUpcoming ? '#F9812A' : '#063559';
+
+    return '<div class="event-item bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-id="' + doc.id + '">' +
+        '<div class="flex items-start gap-3">' +
+        '<div class="text-white rounded-lg p-2 text-center min-w-[44px]" style="background-color: ' + bgColor + '">' +
+        '<p class="text-xs font-semibold leading-none">' + day + '</p>' +
+        '</div>' +
+        '<div class="flex-1">' +
+        '<h3 class="text-sm font-semibold text-[#063559]">' + escapeHtml(data.title) + '</h3>' +
+        '<p class="text-[#7E8994] text-xs">' + formatTime12(data.time) + ' &middot; ' + escapeHtml(data.location || 'TBD') + '</p>' +
+        (data.description ? '<p class="text-[#94A1B0] text-xs mt-1">' + escapeHtml(data.description) + '</p>' : '') +
+        deleteBtn +
+        '</div></div></div>';
+}
+
+async function loadEvents() {
+    var list = document.getElementById('event-list');
+    if (!list) return;
+
+    try {
+        // Get events from today onwards, ordered by date
+        var today = new Date().toISOString().split('T')[0];
+        var snapshot = await db.collection('events').where('date', '>=', today).orderBy('date', 'asc').limit(10).get();
+        var admin = isAdmin();
+
+        // Also load all events for the current month for calendar display
+        var now = new Date();
+        var monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        var monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+        var monthSnapshot = await db.collection('events').where('date', '>=', monthStart).where('date', '<=', monthEnd).get();
+
+        // Cache events by date for calendar
+        calendarEvents = {};
+        monthSnapshot.forEach(function(doc) {
+            var data = doc.data();
+            if (data.date) {
+                if (!calendarEvents[data.date]) calendarEvents[data.date] = [];
+                calendarEvents[data.date].push(data.title);
+            }
+        });
+
+        // Re-render calendar with events
+        initCalendar();
+
+        if (snapshot.empty) {
+            list.innerHTML = '<div class="text-center py-4 text-[#94A1B0] text-sm">No upcoming events. Admins can add events above.</div>';
+            return;
+        }
+
+        var html = '';
+        snapshot.forEach(function(doc) {
+            html += renderEventItem(doc, admin);
+        });
+        list.innerHTML = '<div class="space-y-3">' + html + '</div>';
+    } catch (e) {
+        console.error('Error loading events:', e);
+        list.innerHTML = '<div class="text-center py-4 text-red-500 text-sm">Error loading events.</div>';
+    }
+}
+
+async function addEvent(title, date, time, location, description) {
+    try {
+        await db.collection('events').add({
+            title: title,
+            date: date,
+            time: time,
+            location: location,
+            description: description,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: currentUser ? currentUser.uid : null
+        });
+        return { success: true };
+    } catch (e) {
+        console.error('Error adding event:', e);
+        return { success: false, message: e.message };
+    }
+}
+
+async function deleteEvent(eventId) {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+
+    try {
+        await db.collection('events').doc(eventId).delete();
+        var item = document.querySelector('.event-item[data-id="' + eventId + '"]');
+        if (item) item.remove();
+        loadEvents(); // Reload to refresh calendar
+    } catch (e) {
+        console.error('Error deleting event:', e);
+        alert('Failed to delete event. Please try again.');
+    }
+}
+
+function initEvents() {
+    // Load events from Firestore
+    loadEvents();
+
+    // Handle add event form
+    var form = document.getElementById('add-event-form');
+    if (!form) return;
+
+    // Set default date to today
+    var dateInput = document.getElementById('event-date');
+    if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+    }
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var title = document.getElementById('event-title').value.trim();
+        var date = document.getElementById('event-date').value;
+        var time = document.getElementById('event-time').value;
+        var location = document.getElementById('event-location').value.trim();
+        var desc = document.getElementById('event-desc').value.trim();
+        var btn = form.querySelector('button[type="submit"]');
+        var success = document.getElementById('event-success');
+        var error = document.getElementById('event-error');
+
+        btn.disabled = true;
+        btn.textContent = 'Adding...';
+        success.classList.add('hidden');
+        error.classList.add('hidden');
+
+        var result = await addEvent(title, date, time, location, desc);
+
+        if (result.success) {
+            success.classList.remove('hidden');
+            form.reset();
+            // Reset date to today
+            if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+            loadEvents(); // Refresh the list and calendar
+            setTimeout(function() { success.classList.add('hidden'); }, 3000);
+        } else {
+            error.textContent = result.message || 'Failed to add event.';
+            error.classList.remove('hidden');
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Add Event';
+    });
+}
+
 // ─── Forum — new thread (mock) ───────────────────────────────────
 function initForum() {
     var form = document.getElementById('new-thread-form');
@@ -816,6 +980,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initDocFilter();
     initVideos();
     initVideoFilter();
+    initEvents();
     initForum();
     initGateCode();
     initQRCode();

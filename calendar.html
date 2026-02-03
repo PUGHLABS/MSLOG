@@ -76,6 +76,42 @@
             <p class="text-[#94A1B0] text-sm mt-1">Meetings, work parties, and community activities</p>
         </div>
 
+        <!-- Admin: Add Event Form -->
+        <div id="event-add-form" class="admin-only bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
+            <h3 class="font-semibold text-[#063559] mb-3">Add New Event</h3>
+            <form id="add-event-form" class="space-y-3">
+                <div class="grid md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Event Title</label>
+                        <input type="text" id="event-title" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="e.g., Monthly Meeting">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Date</label>
+                        <input type="date" id="event-date" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Time</label>
+                        <input type="time" id="event-time" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Location</label>
+                        <input type="text" id="event-location" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="e.g., Community Hall">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Description</label>
+                        <input type="text" id="event-desc" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="Brief description (optional)">
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="submit" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold">Add Event</button>
+                    <p id="event-success" class="hidden text-green-600 text-xs">Event added successfully!</p>
+                    <p id="event-error" class="hidden text-red-600 text-xs"></p>
+                </div>
+            </form>
+        </div>
+
         <!-- Two-column layout on desktop -->
         <div class="grid md:grid-cols-5 gap-6">
 
@@ -98,57 +134,8 @@
             <!-- Upcoming events list (2 cols) -->
             <div class="md:col-span-2 space-y-3">
                 <h2 class="font-bold text-[#063559] text-sm uppercase tracking-wide">Upcoming Events</h2>
-
-                <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4">
-                    <div class="flex items-start gap-3">
-                        <div class="bg-[#F9812A] text-white rounded-lg p-2 text-center min-w-[44px]">
-                            <p class="text-xs font-semibold leading-none">5</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-[#063559]">Monthly Meeting</h3>
-                            <p class="text-[#7E8994] text-xs">7:00 PM &middot; Community Hall</p>
-                            <p class="text-[#94A1B0] text-xs mt-1">Regular monthly meeting. Agenda posted to the forum.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4">
-                    <div class="flex items-start gap-3">
-                        <div class="bg-[#063559] text-white rounded-lg p-2 text-center min-w-[44px]">
-                            <p class="text-xs font-semibold leading-none">12</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-[#063559]">Work Party</h3>
-                            <p class="text-[#7E8994] text-xs">9:00 AM &middot; Road &amp; Grounds</p>
-                            <p class="text-[#94A1B0] text-xs mt-1">Snow clearing and road maintenance. Bring gloves and boots.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4">
-                    <div class="flex items-start gap-3">
-                        <div class="bg-[#063559] text-white rounded-lg p-2 text-center min-w-[44px]">
-                            <p class="text-xs font-semibold leading-none">19</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-[#063559]">Board Meeting</h3>
-                            <p class="text-[#7E8994] text-xs">6:00 PM &middot; Online (Zoom link in forum)</p>
-                            <p class="text-[#94A1B0] text-xs mt-1">Quarterly board meeting. Open to all members.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4">
-                    <div class="flex items-start gap-3">
-                        <div class="bg-[#063559] text-white rounded-lg p-2 text-center min-w-[44px]">
-                            <p class="text-xs font-semibold leading-none">26</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-[#063559]">Community Potluck</h3>
-                            <p class="text-[#7E8994] text-xs">5:00 PM &middot; Community Area</p>
-                            <p class="text-[#94A1B0] text-xs mt-1">End-of-month potluck. Bring a dish to share.</p>
-                        </div>
-                    </div>
+                <div id="event-list">
+                    <div class="text-center py-4 text-[#94A1B0] text-sm">Loading events...</div>
                 </div>
             </div>
         </div>
@@ -170,7 +157,10 @@
 </footer>
 
 <script src="script.js"></script>
-<script>document.addEventListener('DOMContentLoaded', async function() { await requireAuth(); });</script>
+<script>document.addEventListener('DOMContentLoaded', async function() {
+    await requireAuth();
+    loadEvents(); // Reload events now that auth state is known
+});</script>
 </body>
 </html>
 
