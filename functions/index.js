@@ -1,0 +1,166 @@
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const { Resend } = require('resend');
+
+admin.initializeApp();
+
+// ntfy.sh topic for admin notifications
+const NTFY_TOPIC = 'mslog-pugh-7x9k2';
+
+// Resend client - initialized lazily to avoid errors during deployment analysis
+let resendClient = null;
+function getResend() {
+    if (!resendClient) {
+        const apiKey = process.env.RESEND_API_KEY;
+        if (!apiKey) {
+            console.error('RESEND_API_KEY not configured in .env file');
+            return null;
+        }
+        resendClient = new Resend(apiKey);
+    }
+    return resendClient;
+}
+
+/**
+ * Triggered when a new member document is created in Firestore.
+ * Sends a push notification via ntfy.sh to alert admin of pending registration.
+ */
+exports.notifyNewMember = functions.firestore
+    .document('members/{memberId}')
+    .onCreate(async (snap, context) => {
+        const member = snap.data();
+        const memberId = context.params.memberId;
+
+        console.log('Function triggered for member:', memberId);
+        console.log('Member data:', JSON.stringify(member));
+
+        // Only notify for pending registrations
+        if (member.status !== 'pending') {
+            console.log('Member not pending, skipping notification. Status:', member.status);
+            return null;
+        }
+
+        const title = 'New MSLOG Registration';
+        const message = `${member.name || 'Unknown'} (${member.email}) - Lot ${member.lot || 'N/A'}`;
+        const ntfyUrl = `https://ntfy.sh/${NTFY_TOPIC}`;
+
+        console.log('Sending to ntfy:', ntfyUrl);
+        console.log('Message:', message);
+
+        try {
+            const response = await fetch(ntfyUrl, {
+                method: 'POST',
+                headers: {
+                    'Title': title,
+                    'Priority': 'high',
+                    'Tags': 'new,user',
+                    'Actions': `view, Open Admin Panel, https://pughlabs.github.io/MSLOG/admin.html`
+                },
+                body: message
+            });
+
+            console.log('ntfy response status:', response.status);
+
+            if (!response.ok) {
+                throw new Error(`ntfy.sh responded with ${response.status}`);
+            }
+
+            console.log(`Notification sent successfully for: ${member.email}`);
+            return { success: true };
+        } catch (error) {
+            console.error('Error sending ntfy notification:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+/**
+ * Triggered when a member document is updated.
+ * Sends welcome email when status changes from 'pending' to 'approved'.
+ */
+exports.sendApprovalEmail = functions.firestore
+    .document('members/{memberId}')
+    .onUpdate(async (change, context) => {
+        const before = change.before.data();
+        const after = change.after.data();
+        const memberId = context.params.memberId;
+
+        console.log('Update detected for member:', memberId);
+
+        // Only send email if status changed from pending to approved
+        if (before.status === 'pending' && after.status === 'approved') {
+            console.log('Member approved! Sending welcome email to:', after.email);
+
+            const resend = getResend();
+            if (!resend) {
+                console.error('Cannot send email - Resend not configured');
+                return { success: false, error: 'Resend API key not configured' };
+            }
+
+            try {
+                const { data, error } = await resend.emails.send({
+                    from: 'MSLOG <noreply@mtspokanelandgroup.org>',
+                    to: after.email,
+                    subject: 'Welcome to MSLOG - Your Account is Approved!',
+                    html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                            <div style="background-color: #063559; padding: 20px; text-align: center;">
+                                <h1 style="color: white; margin: 0;">MSLOG</h1>
+                                <p style="color: #94A1B0; margin: 5px 0 0 0;">Mount Spokane Land Owners Group</p>
+                            </div>
+
+                            <div style="padding: 30px; background-color: #f8fafc;">
+                                <h2 style="color: #063559;">Welcome, ${after.name || 'Member'}!</h2>
+
+                                <p style="color: #333; line-height: 1.6;">
+                                    Great news! Your MSLOG membership has been approved. You now have full access to our member portal.
+                                </p>
+
+                                <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                                    <h3 style="color: #063559; margin-top: 0;">What you can access:</h3>
+                                    <ul style="color: #333; line-height: 1.8;">
+                                        <li>Current gate codes</li>
+                                        <li>Community documents & bylaws</li>
+                                        <li>Member directory</li>
+                                        <li>Event calendar</li>
+                                        <li>Discussion forum</li>
+                                    </ul>
+                                </div>
+
+                                <div style="text-align: center; margin: 30px 0;">
+                                    <a href="https://pughlabs.github.io/MSLOG/login.html"
+                                       style="background-color: #F9812A; color: white; padding: 12px 30px;
+                                              text-decoration: none; border-radius: 6px; font-weight: bold;">
+                                        Login to MSLOG
+                                    </a>
+                                </div>
+
+                                <p style="color: #666; font-size: 14px;">
+                                    If you have any questions, please contact the MSLOG administrator.
+                                </p>
+                            </div>
+
+                            <div style="background-color: #063559; padding: 15px; text-align: center;">
+                                <p style="color: #94A1B0; margin: 0; font-size: 12px;">
+                                    Mount Spokane Land Owners Group &bull; Mount Spokane, WA
+                                </p>
+                            </div>
+                        </div>
+                    `
+                });
+
+                if (error) {
+                    console.error('Resend error:', error);
+                    return { success: false, error: error.message };
+                }
+
+                console.log('Welcome email sent successfully:', data);
+                return { success: true, emailId: data.id };
+            } catch (error) {
+                console.error('Error sending welcome email:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        console.log('Status not changed to approved, skipping email');
+        return null;
+    });
