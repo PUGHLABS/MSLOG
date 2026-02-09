@@ -80,19 +80,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="card-hover bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
                 <p class="text-[#7E8994] text-xs uppercase tracking-wide">Members</p>
-                <p class="text-2xl font-bold text-[#063559] mt-1">47</p>
+                <p id="stat-members" class="text-2xl font-bold text-[#063559] mt-1">—</p>
             </div>
             <div class="card-hover bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
                 <p class="text-[#7E8994] text-xs uppercase tracking-wide">Documents</p>
-                <p class="text-2xl font-bold text-[#063559] mt-1">23</p>
+                <p id="stat-documents" class="text-2xl font-bold text-[#063559] mt-1">—</p>
             </div>
             <div class="card-hover bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
                 <p class="text-[#7E8994] text-xs uppercase tracking-wide">Events</p>
-                <p class="text-2xl font-bold text-[#063559] mt-1">4</p>
+                <p id="stat-events" class="text-2xl font-bold text-[#063559] mt-1">—</p>
             </div>
             <div class="card-hover bg-white rounded-xl p-4 shadow-sm border border-[#e2e8f0]">
                 <p class="text-[#7E8994] text-xs uppercase tracking-wide">Forum Posts</p>
-                <p class="text-2xl font-bold text-[#063559] mt-1">12</p>
+                <p id="stat-posts" class="text-2xl font-bold text-[#063559] mt-1">—</p>
             </div>
         </div>
 
@@ -224,7 +224,36 @@
         await requireAuth();
         var authData = getAuth();
         if (authData) document.getElementById('dash-greeting').textContent = 'Welcome Back, ' + authData.name;
+
+        // Load dashboard stats from Firestore
+        loadDashboardStats();
     });
+
+    async function loadDashboardStats() {
+        const db = firebase.firestore();
+
+        // Load each stat independently so one failure doesn't block others
+
+        // Count approved members
+        db.collection('members').where('status', '==', 'approved').get()
+            .then(snap => document.getElementById('stat-members').textContent = snap.size)
+            .catch(e => { console.error('Members count error:', e); document.getElementById('stat-members').textContent = '0'; });
+
+        // Count documents
+        db.collection('documents').get()
+            .then(snap => document.getElementById('stat-documents').textContent = snap.size)
+            .catch(e => { console.error('Documents count error:', e); document.getElementById('stat-documents').textContent = '0'; });
+
+        // Count all events (simpler query, no date filter that might fail)
+        db.collection('events').get()
+            .then(snap => document.getElementById('stat-events').textContent = snap.size)
+            .catch(e => { console.error('Events count error:', e); document.getElementById('stat-events').textContent = '0'; });
+
+        // Count forum posts
+        db.collection('forum_posts').get()
+            .then(snap => document.getElementById('stat-posts').textContent = snap.size)
+            .catch(e => { console.error('Forum posts count error:', e); document.getElementById('stat-posts').textContent = '0'; });
+    }
 </script>
 </body>
 </html>

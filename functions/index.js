@@ -1,13 +1,12 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const { Resend } = require('resend');
 
 admin.initializeApp();
 
 // ntfy.sh topic for admin notifications
 const NTFY_TOPIC = 'mslog-pugh-7x9k2';
 
-// Resend client - initialized lazily to avoid errors during deployment analysis
+// Resend client - fully lazy loaded to avoid deployment timeouts
 let resendClient = null;
 function getResend() {
     if (!resendClient) {
@@ -16,6 +15,7 @@ function getResend() {
             console.error('RESEND_API_KEY not configured in .env file');
             return null;
         }
+        const { Resend } = require('resend');
         resendClient = new Resend(apiKey);
     }
     return resendClient;
