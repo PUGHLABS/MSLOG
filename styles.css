@@ -44,12 +44,16 @@ html {
     backdrop-filter: blur(8px);
 }
 
-/* Weather widget 30% larger on desktop */
+/* Weather widget larger on homepage desktop */
 @media (min-width: 768px) {
     .weather-desktop {
         transform: scale(1.15);
         transform-origin: top left;
         margin-bottom: 1.5rem;
+    }
+    /* Smaller on dashboard to prevent overlap */
+    .dashboard-weather .weather-desktop {
+        transform: scale(0.85);
     }
 }
 
