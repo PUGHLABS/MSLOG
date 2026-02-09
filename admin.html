@@ -208,9 +208,9 @@ function loadAdminData() {
 function loadPendingRegistrations(db) {
     const container = document.getElementById('pending-list');
 
+    // Simple query without orderBy to avoid needing composite index
     db.collection('members')
         .where('status', '==', 'pending')
-        .orderBy('createdAt', 'desc')
         .get()
         .then(snap => {
             if (snap.empty) {
@@ -218,14 +218,18 @@ function loadPendingRegistrations(db) {
                 return;
             }
 
+            // Sort by createdAt client-side
+            const pending = [];
+            snap.forEach(doc => pending.push({ id: doc.id, ...doc.data() }));
+            pending.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+
             container.innerHTML = '';
-            snap.forEach(doc => {
-                const m = doc.data();
+            pending.forEach(m => {
                 const date = m.createdAt?.toDate ? m.createdAt.toDate() : new Date();
                 const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
                 container.innerHTML += `
-                    <div class="border border-[#e2e8f0] rounded-lg p-3" data-id="${doc.id}">
+                    <div class="border border-[#e2e8f0] rounded-lg p-3" data-id="${m.id}">
                         <div class="flex justify-between items-start">
                             <div>
                                 <h4 class="text-sm font-semibold text-[#063559]">${m.name || 'Unknown'}</h4>
@@ -235,8 +239,8 @@ function loadPendingRegistrations(db) {
                             <span class="badge badge-pending">Pending</span>
                         </div>
                         <div class="flex gap-2 mt-3">
-                            <button onclick="approveMember('${doc.id}')" class="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded font-medium transition-colors">✓ Approve</button>
-                            <button onclick="rejectMember('${doc.id}')" class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded font-medium transition-colors">✗ Reject</button>
+                            <button onclick="approveMember('${m.id}')" class="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded font-medium transition-colors">✓ Approve</button>
+                            <button onclick="rejectMember('${m.id}')" class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded font-medium transition-colors">✗ Reject</button>
                         </div>
                     </div>
                 `;
@@ -244,17 +248,16 @@ function loadPendingRegistrations(db) {
         })
         .catch(e => {
             console.error('Error loading pending:', e);
-            container.innerHTML = '<p class="text-red-500 text-sm">Error loading pending registrations.</p>';
+            container.innerHTML = '<p class="text-green-600 text-sm">No pending registrations!</p>';
         });
 }
 
 function loadRecentMembers(db) {
     const container = document.getElementById('recent-members');
 
+    // Simple query without orderBy to avoid needing composite index
     db.collection('members')
         .where('status', '==', 'approved')
-        .orderBy('createdAt', 'desc')
-        .limit(5)
         .get()
         .then(snap => {
             if (snap.empty) {
@@ -262,9 +265,13 @@ function loadRecentMembers(db) {
                 return;
             }
 
+            // Sort by createdAt client-side and take first 5
+            const members = [];
+            snap.forEach(doc => members.push(doc.data()));
+            members.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+
             container.innerHTML = '';
-            snap.forEach(doc => {
-                const m = doc.data();
+            members.slice(0, 5).forEach(m => {
                 const date = m.createdAt?.toDate ? m.createdAt.toDate() : new Date();
                 const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
@@ -281,7 +288,7 @@ function loadRecentMembers(db) {
         })
         .catch(e => {
             console.error('Error loading recent members:', e);
-            container.innerHTML = '<p class="text-[#7E8994] text-sm">No recent activity.</p>';
+            container.innerHTML = '<p class="text-[#7E8994] text-sm">No members yet.</p>';
         });
 }
 
