@@ -826,6 +826,7 @@ function formatTime12(time24) {
 function renderEventItem(doc, isAdmin) {
     var data = doc.data();
     var eventDate = data.date ? new Date(data.date + 'T00:00:00') : new Date();
+    var month = eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
     var day = eventDate.getDate();
     var isUpcoming = eventDate >= new Date(new Date().setHours(0, 0, 0, 0));
 
@@ -837,7 +838,8 @@ function renderEventItem(doc, isAdmin) {
     return '<div class="event-item bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4" data-id="' + doc.id + '">' +
         '<div class="flex items-start gap-3">' +
         '<div class="text-white rounded-lg p-2 text-center min-w-[44px]" style="background-color: ' + bgColor + '">' +
-        '<p class="text-xs font-semibold leading-none">' + day + '</p>' +
+        '<p class="text-xs font-semibold leading-none">' + month + '</p>' +
+        '<p class="text-lg font-bold leading-none">' + day + '</p>' +
         '</div>' +
         '<div class="flex-1">' +
         '<h3 class="text-sm font-semibold text-[#063559]">' + escapeHtml(data.title) + '</h3>' +
@@ -852,13 +854,14 @@ async function loadEvents() {
     if (!list) return;
 
     try {
-        // Get events from today onwards, ordered by date
-        var today = new Date().toISOString().split('T')[0];
-        var snapshot = await db.collection('events').where('date', '>=', today).orderBy('date', 'asc').limit(10).get();
+        // Get all events for the current year, ordered by date
+        var now = new Date();
+        var yearStart = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+        var yearEnd = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0];
+        var snapshot = await db.collection('events').where('date', '>=', yearStart).where('date', '<=', yearEnd).orderBy('date', 'asc').get();
         var admin = isAdmin();
 
         // Also load all events for the current month for calendar display
-        var now = new Date();
         var monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
         var monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
         var monthSnapshot = await db.collection('events').where('date', '>=', monthStart).where('date', '<=', monthEnd).get();
@@ -877,7 +880,7 @@ async function loadEvents() {
         initCalendar();
 
         if (snapshot.empty) {
-            list.innerHTML = '<div class="text-center py-4 text-[#94A1B0] text-sm">No upcoming events. Admins can add events above.</div>';
+            list.innerHTML = '<div class="text-center py-4 text-[#94A1B0] text-sm">No events this year. Admins can add events above.</div>';
             return;
         }
 
