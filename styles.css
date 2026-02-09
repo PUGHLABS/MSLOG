@@ -51,9 +51,9 @@ html {
         transform-origin: top left;
         margin-bottom: 1.5rem;
     }
-    /* Smaller on dashboard to prevent overlap */
+    /* Normal size on dashboard to prevent overlap */
     .dashboard-weather .weather-desktop {
-        transform: scale(0.85);
+        transform: scale(1);
     }
 }
 
