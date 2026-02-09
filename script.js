@@ -246,39 +246,93 @@ function initLoginForm() {
     });
 }
 
-// ─── Weather Widget (mock Mount Spokane data) ─────────────────────
+// ─── Weather Widget (Live data from Open-Meteo API) ─────────────────────
 function initWeather() {
     var el = document.getElementById('weather-widget');
     if (!el) return;
 
-    var days = [
-        { d:'Today', hi:30, lo:22, ic:'&#9201;', c:'Partly Cloudy' },
-        { d:'Fri',   hi:28, lo:20, ic:'&#127912;', c:'Light Snow' },
-        { d:'Sat',   hi:25, lo:18, ic:'&#10052;',  c:'Snow' },
-        { d:'Sun',   hi:27, lo:19, ic:'&#9601;',   c:'Cloudy' },
-        { d:'Mon',   hi:32, lo:24, ic:'&#9728;',   c:'Clear' },
-        { d:'Tue',   hi:30, lo:22, ic:'&#9201;',   c:'Partly Cloudy' },
-        { d:'Wed',   hi:26, lo:20, ic:'&#127912;', c:'Light Snow' }
-    ];
+    // Mount Spokane coordinates
+    var lat = 47.9244;
+    var lon = -117.1139;
 
-    var forecast = days.map(function(d) {
+    // Show loading state
+    el.innerHTML = '<div class="weather-card weather-desktop rounded-xl p-4 md:p-5 text-white shadow-lg"><p class="text-center text-sm">Loading weather...</p></div>';
+
+    // Fetch weather from Open-Meteo (free, no API key needed)
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+          '&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,snowfall_sum' +
+          '&temperature_unit=fahrenheit&timezone=America/Los_Angeles&forecast_days=7')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            renderWeather(el, data);
+        })
+        .catch(function(err) {
+            console.error('Weather fetch error:', err);
+            renderWeatherFallback(el);
+        });
+}
+
+function getWeatherIcon(code) {
+    // WMO Weather codes: https://open-meteo.com/en/docs
+    if (code === 0) return { icon: '☀️', desc: 'Clear' };
+    if (code <= 3) return { icon: '⛅', desc: 'Partly Cloudy' };
+    if (code <= 48) return { icon: '☁️', desc: 'Cloudy' };
+    if (code <= 55) return { icon: '🌧️', desc: 'Drizzle' };
+    if (code <= 65) return { icon: '🌧️', desc: 'Rain' };
+    if (code <= 67) return { icon: '🌨️', desc: 'Freezing Rain' };
+    if (code <= 77) return { icon: '❄️', desc: 'Snow' };
+    if (code <= 82) return { icon: '🌧️', desc: 'Rain Showers' };
+    if (code <= 86) return { icon: '🌨️', desc: 'Snow Showers' };
+    if (code <= 99) return { icon: '⛈️', desc: 'Thunderstorm' };
+    return { icon: '🌡️', desc: 'Weather' };
+}
+
+function renderWeather(el, data) {
+    var current = data.current;
+    var daily = data.daily;
+    var dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    var currentWeather = getWeatherIcon(current.weather_code);
+    var currentTemp = Math.round(current.temperature_2m);
+
+    // Calculate total snow in forecast
+    var totalSnow = daily.snowfall_sum.reduce(function(a, b) { return a + b; }, 0);
+    var snowText = totalSnow > 0 ? Math.round(totalSnow) + '" snow expected' : 'No snow expected';
+
+    // Build 7-day forecast
+    var forecast = daily.time.map(function(dateStr, i) {
+        var date = new Date(dateStr + 'T12:00:00');
+        var dayName = i === 0 ? 'Today' : dayNames[date.getDay()];
+        var weather = getWeatherIcon(daily.weather_code[i]);
+        var hi = Math.round(daily.temperature_2m_max[i]);
+        var lo = Math.round(daily.temperature_2m_min[i]);
+
         return '<div class="text-center">' +
-            '<p class="text-[#94A1B0] text-xs">' + d.d + '</p>' +
-            '<p class="text-base">' + d.ic + '</p>' +
-            '<p class="text-xs font-semibold">' + d.hi + '&deg;</p>' +
-            '<p class="text-[#94A1B0] text-xs">' + d.lo + '&deg;</p></div>';
+            '<p class="text-[#94A1B0] text-xs md:text-sm">' + dayName + '</p>' +
+            '<p class="text-base md:text-lg">' + weather.icon + '</p>' +
+            '<p class="text-xs md:text-sm font-semibold">' + hi + '°</p>' +
+            '<p class="text-[#94A1B0] text-xs md:text-sm">' + lo + '°</p></div>';
     }).join('');
 
     el.innerHTML =
-        '<div class="weather-card rounded-xl p-4 text-white shadow-lg">' +
+        '<div class="weather-card weather-desktop rounded-xl p-4 md:p-5 text-white shadow-lg">' +
         '<div class="flex justify-between items-start mb-3">' +
-        '<div><h3 class="font-bold text-base">Mount Spokane, WA</h3>' +
-        '<p class="text-[#94A1B0] text-xs">5,281 ft &middot; Snow Depth: 42&quot;</p></div>' +
-        '<div class="text-right"><p class="text-3xl font-bold">30&deg;F</p>' +
-        '<p class="text-[#94A1B0] text-xs">Partly Cloudy</p></div></div>' +
+        '<div><h3 class="font-bold text-base md:text-lg">Mount Spokane, WA</h3>' +
+        '<p class="text-[#94A1B0] text-xs md:text-sm">5,281 ft · ' + snowText + '</p></div>' +
+        '<div class="text-right"><p class="text-3xl md:text-4xl font-bold">' + currentTemp + '°F</p>' +
+        '<p class="text-[#94A1B0] text-xs md:text-sm">' + currentWeather.desc + '</p></div></div>' +
         '<div class="border-t border-white border-opacity-20 pt-3">' +
-        '<div class="grid grid-cols-7 gap-0.5">' + forecast + '</div></div>' +
-        '<p class="text-[#94A1B0] text-xs mt-2 text-center">Source: mountain-forecast.com &middot; Updated daily</p></div>';
+        '<div class="grid grid-cols-7 gap-0.5 md:gap-1">' + forecast + '</div></div>' +
+        '<p class="text-[#94A1B0] text-xs md:text-sm mt-2 text-center">Source: Open-Meteo · Updated hourly</p></div>';
+}
+
+function renderWeatherFallback(el) {
+    el.innerHTML =
+        '<div class="weather-card weather-desktop rounded-xl p-4 md:p-5 text-white shadow-lg">' +
+        '<div class="flex justify-between items-start">' +
+        '<div><h3 class="font-bold text-base md:text-lg">Mount Spokane, WA</h3>' +
+        '<p class="text-[#94A1B0] text-xs md:text-sm">5,281 ft elevation</p></div>' +
+        '<div class="text-right"><p class="text-[#94A1B0] text-sm md:text-base">Weather unavailable</p></div></div></div>';
 }
 
 // ─── Calendar ────────────────────────────────────────────────────
