@@ -137,67 +137,18 @@
                 <!-- Announcements -->
                 <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
                     <h2 class="font-bold text-[#063559] mb-4 text-xs uppercase tracking-wide">Announcements</h2>
-                    <div class="space-y-3">
-                        <div class="bg-[#fff7ed] border border-[#fed7aa] rounded-lg p-3">
-                            <div class="flex justify-between items-start">
-                                <h3 class="text-sm font-semibold text-[#c2410c]">Gate Code Updated</h3>
-                                <span class="text-[#7E8994] text-xs">Jan 28</span>
-                            </div>
-                            <p class="text-[#7E8994] text-xs mt-1">The IEP chain gate code has been changed. Check the Gate Code page for the updated code.</p>
-                        </div>
-                        <div class="bg-[#f0f9ff] border border-[#bae6fd] rounded-lg p-3">
-                            <div class="flex justify-between items-start">
-                                <h3 class="text-sm font-semibold text-[#0369a1]">Work Party — Feb 12</h3>
-                                <span class="text-[#7E8994] text-xs">Jan 25</span>
-                            </div>
-                            <p class="text-[#7E8994] text-xs mt-1">Scheduled work party Feb 12 at 9:00 AM. Road clearing and general maintenance. All members welcome.</p>
-                        </div>
-                        <div class="bg-[#f0f9ff] border border-[#bae6fd] rounded-lg p-3">
-                            <div class="flex justify-between items-start">
-                                <h3 class="text-sm font-semibold text-[#0369a1]">Monthly Meeting — Feb 5</h3>
-                                <span class="text-[#7E8994] text-xs">Jan 20</span>
-                            </div>
-                            <p class="text-[#7E8994] text-xs mt-1">Regular monthly meeting at 7:00 PM. Agenda posted to the forum.</p>
-                        </div>
+                    <div id="announcements-list" class="space-y-3">
+                        <p class="text-[#7E8994] text-sm">Loading announcements...</p>
                     </div>
                 </div>
 
                 <!-- Upcoming Events -->
                 <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
                     <h2 class="font-bold text-[#063559] mb-4 text-xs uppercase tracking-wide">Upcoming Events</h2>
-                    <div class="space-y-4">
-                        <div class="flex items-start gap-3">
-                            <div class="bg-[#F9812A] text-white rounded-lg p-2 text-center min-w-[48px]">
-                                <p class="text-xs font-semibold leading-none">FEB</p>
-                                <p class="text-lg font-bold leading-none">5</p>
-                            </div>
-                            <div>
-                                <h3 class="text-sm font-semibold text-[#063559]">Monthly Meeting</h3>
-                                <p class="text-[#7E8994] text-xs">7:00 PM &middot; Community Hall</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="bg-[#063559] text-white rounded-lg p-2 text-center min-w-[48px]">
-                                <p class="text-xs font-semibold leading-none">FEB</p>
-                                <p class="text-lg font-bold leading-none">12</p>
-                            </div>
-                            <div>
-                                <h3 class="text-sm font-semibold text-[#063559]">Work Party</h3>
-                                <p class="text-[#7E8994] text-xs">9:00 AM &middot; Road &amp; Grounds</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="bg-[#063559] text-white rounded-lg p-2 text-center min-w-[48px]">
-                                <p class="text-xs font-semibold leading-none">FEB</p>
-                                <p class="text-lg font-bold leading-none">19</p>
-                            </div>
-                            <div>
-                                <h3 class="text-sm font-semibold text-[#063559]">Board Meeting</h3>
-                                <p class="text-[#7E8994] text-xs">6:00 PM &middot; Online</p>
-                            </div>
-                        </div>
-                        <a href="calendar.html" class="text-[#F9812A] text-xs font-semibold hover:underline">View full calendar →</a>
+                    <div id="events-list" class="space-y-4">
+                        <p class="text-[#7E8994] text-sm">Loading events...</p>
                     </div>
+                    <a href="calendar.html" class="text-[#F9812A] text-xs font-semibold hover:underline mt-4 block">View full calendar →</a>
                 </div>
             </div>
         </div>
@@ -253,6 +204,106 @@
         db.collection('forum_posts').get()
             .then(snap => document.getElementById('stat-posts').textContent = snap.size)
             .catch(e => { console.error('Forum posts count error:', e); document.getElementById('stat-posts').textContent = '0'; });
+
+        // Load announcements
+        loadAnnouncements(db);
+
+        // Load upcoming events
+        loadUpcomingEvents(db);
+    }
+
+    function loadAnnouncements(db) {
+        const container = document.getElementById('announcements-list');
+
+        db.collection('announcements')
+            .orderBy('date', 'desc')
+            .limit(5)
+            .get()
+            .then(snap => {
+                if (snap.empty) {
+                    container.innerHTML = '<p class="text-[#7E8994] text-sm">No announcements yet.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                snap.forEach(doc => {
+                    const a = doc.data();
+                    const date = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+                    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const isUrgent = a.urgent || a.type === 'urgent';
+
+                    const bgClass = isUrgent ? 'bg-[#fff7ed] border-[#fed7aa]' : 'bg-[#f0f9ff] border-[#bae6fd]';
+                    const textClass = isUrgent ? 'text-[#c2410c]' : 'text-[#0369a1]';
+
+                    container.innerHTML += `
+                        <div class="${bgClass} border rounded-lg p-3">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-sm font-semibold ${textClass}">${a.title || 'Announcement'}</h3>
+                                <span class="text-[#7E8994] text-xs">${dateStr}</span>
+                            </div>
+                            <p class="text-[#7E8994] text-xs mt-1">${a.message || a.content || ''}</p>
+                        </div>
+                    `;
+                });
+            })
+            .catch(e => {
+                console.error('Announcements error:', e);
+                container.innerHTML = '<p class="text-[#7E8994] text-sm">No announcements yet.</p>';
+            });
+    }
+
+    function loadUpcomingEvents(db) {
+        const container = document.getElementById('events-list');
+        const now = new Date();
+
+        db.collection('events')
+            .orderBy('date', 'asc')
+            .limit(5)
+            .get()
+            .then(snap => {
+                if (snap.empty) {
+                    container.innerHTML = '<p class="text-[#7E8994] text-sm">No upcoming events.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                let count = 0;
+                snap.forEach(doc => {
+                    const e = doc.data();
+                    const date = e.date?.toDate ? e.date.toDate() : new Date(e.date);
+
+                    // Skip past events
+                    if (date < now) return;
+                    if (count >= 3) return;
+                    count++;
+
+                    const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                    const day = date.getDate();
+                    const time = e.time || date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    const bgColor = count === 1 ? 'bg-[#F9812A]' : 'bg-[#063559]';
+
+                    container.innerHTML += `
+                        <div class="flex items-start gap-3">
+                            <div class="${bgColor} text-white rounded-lg p-2 text-center min-w-[48px]">
+                                <p class="text-xs font-semibold leading-none">${month}</p>
+                                <p class="text-lg font-bold leading-none">${day}</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-[#063559]">${e.title || 'Event'}</h3>
+                                <p class="text-[#7E8994] text-xs">${time}${e.location ? ' · ' + e.location : ''}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (count === 0) {
+                    container.innerHTML = '<p class="text-[#7E8994] text-sm">No upcoming events.</p>';
+                }
+            })
+            .catch(e => {
+                console.error('Events error:', e);
+                container.innerHTML = '<p class="text-[#7E8994] text-sm">No upcoming events.</p>';
+            });
     }
 </script>
 </body>
