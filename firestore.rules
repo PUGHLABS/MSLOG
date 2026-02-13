@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Members collection - authenticated users can read their own doc
+    match /members/{memberId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null
+        && request.auth.token.admin == true;
+    }
+
+    // Contact messages - anyone can create, only admin can read/update/delete
+    match /contact_messages/{messageId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // Announcements - authenticated users can read, admin can write
+    match /announcements/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Events - authenticated users can read, admin can write
+    match /events/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Forum - authenticated users can read and write
+    match /forum/{docId} {
+      allow read, write: if request.auth != null;
+    }
+    match /forum/{threadId}/replies/{replyId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Gate codes - authenticated users can read, admin can write
+    match /settings/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Documents - authenticated users can read
+    match /documents/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}

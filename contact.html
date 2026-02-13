@@ -83,6 +83,10 @@
             <div class="p-6">
                 <form id="contact-form">
                     <div class="mb-4">
+                        <label for="contact-name" class="block text-sm font-medium text-[#063559] mb-1">Your Name</label>
+                        <input type="text" id="contact-name" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="John Smith">
+                    </div>
+                    <div class="mb-4">
                         <label for="contact-email" class="block text-sm font-medium text-[#063559] mb-1">Your Email</label>
                         <input type="email" id="contact-email" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="your@email.com">
                     </div>
@@ -117,16 +121,18 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById('contact-form');
+    var nameInput = document.getElementById('contact-name');
     var emailInput = document.getElementById('contact-email');
     var msgInput = document.getElementById('contact-message');
     var successEl = document.getElementById('contact-success');
     var errorEl = document.getElementById('contact-error');
     var submitBtn = document.getElementById('contact-submit');
 
-    // Pre-fill email if logged in
+    // Pre-fill name and email if logged in
     firebase.auth().onAuthStateChanged(function(user) {
-        if (user && user.email && !emailInput.value) {
-            emailInput.value = user.email;
+        if (user) {
+            if (user.email && !emailInput.value) emailInput.value = user.email;
+            if (user.displayName && !nameInput.value) nameInput.value = user.displayName;
         }
     });
 
@@ -139,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             await db.collection('contact_messages').add({
+                name: nameInput.value.trim(),
                 email: emailInput.value.trim(),
                 message: msgInput.value.trim(),
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
