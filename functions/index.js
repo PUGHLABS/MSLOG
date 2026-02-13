@@ -164,3 +164,58 @@ exports.sendApprovalEmail = functions.firestore
         console.log('Status not changed to approved, skipping email');
         return null;
     });
+
+/**
+ * Triggered when a new contact message is created in Firestore.
+ * Forwards the message to admin via Resend email.
+ */
+exports.forwardContactMessage = functions.firestore
+    .document('contact_messages/{messageId}')
+    .onCreate(async (snap, context) => {
+        const msg = snap.data();
+        const messageId = context.params.messageId;
+
+        console.log('New contact message from:', msg.email);
+
+        const resend = getResend();
+        if (!resend) {
+            console.error('Cannot forward message - Resend not configured');
+            return { success: false, error: 'Resend API key not configured' };
+        }
+
+        try {
+            const { data, error } = await resend.emails.send({
+                from: 'MSLOG Contact Form <noreply@mtspokanelandgroup.org>',
+                to: 'pughlabs@gmail.com',
+                replyTo: msg.email,
+                subject: 'MSLOG Contact Form Message',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <div style="background-color: #063559; padding: 20px; text-align: center;">
+                            <h1 style="color: white; margin: 0;">MSLOG Contact Form</h1>
+                        </div>
+                        <div style="padding: 30px; background-color: #f8fafc;">
+                            <p style="color: #333;"><strong>From:</strong> ${msg.email}</p>
+                            <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 15px 0;">
+                                <p style="color: #333; line-height: 1.6; white-space: pre-wrap;">${msg.message}</p>
+                            </div>
+                            <p style="color: #999; font-size: 12px;">Reply directly to this email to respond to the sender.</p>
+                        </div>
+                    </div>
+                `
+            });
+
+            if (error) {
+                console.error('Resend error:', error);
+                return { success: false, error: error.message };
+            }
+
+            // Mark as forwarded
+            await snap.ref.update({ forwarded: true });
+            console.log('Contact message forwarded successfully:', data);
+            return { success: true, emailId: data.id };
+        } catch (error) {
+            console.error('Error forwarding contact message:', error);
+            return { success: false, error: error.message };
+        }
+    });
