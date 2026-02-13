@@ -3,8 +3,8 @@ const admin = require('firebase-admin');
 
 admin.initializeApp();
 
-// ntfy.sh topic for admin notifications
-const NTFY_TOPIC = 'mslog-pugh-7x9k2';
+// Discord webhook URL from .env
+const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK_URL;
 
 // Resend client - fully lazy loaded to avoid deployment timeouts
 let resendClient = null;
@@ -22,8 +22,33 @@ function getResend() {
 }
 
 /**
+ * Sends a Discord webhook message with an embed.
+ */
+async function sendDiscord(embed) {
+    if (!DISCORD_WEBHOOK) {
+        console.error('DISCORD_WEBHOOK_URL not configured in .env file');
+        return false;
+    }
+    try {
+        const response = await fetch(DISCORD_WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ embeds: [embed] })
+        });
+        if (!response.ok) {
+            throw new Error(`Discord responded with ${response.status}`);
+        }
+        console.log('Discord notification sent successfully');
+        return true;
+    } catch (error) {
+        console.error('Error sending Discord notification:', error);
+        return false;
+    }
+}
+
+/**
  * Triggered when a new member document is created in Firestore.
- * Sends a push notification via ntfy.sh to alert admin of pending registration.
+ * Sends a Discord notification to alert admin of pending registration.
  */
 exports.notifyNewMember = functions.firestore
     .document('members/{memberId}')
@@ -32,7 +57,6 @@ exports.notifyNewMember = functions.firestore
         const memberId = context.params.memberId;
 
         console.log('Function triggered for member:', memberId);
-        console.log('Member data:', JSON.stringify(member));
 
         // Only notify for pending registrations
         if (member.status !== 'pending') {
@@ -40,37 +64,20 @@ exports.notifyNewMember = functions.firestore
             return null;
         }
 
-        const title = 'New MSLOG Registration';
-        const message = `${member.name || 'Unknown'} (${member.email}) - Lot ${member.lot || 'N/A'}`;
-        const ntfyUrl = `https://ntfy.sh/${NTFY_TOPIC}`;
+        await sendDiscord({
+            title: 'New Member Registration',
+            color: 0xF9812A,
+            fields: [
+                { name: 'Name', value: member.name || 'Unknown', inline: true },
+                { name: 'Email', value: member.email || 'N/A', inline: true },
+                { name: 'Lot', value: member.lot || 'N/A', inline: true }
+            ],
+            footer: { text: 'MSLOG Admin Notification' },
+            timestamp: new Date().toISOString(),
+            url: 'https://pughlabs.github.io/MSLOG/admin.html'
+        });
 
-        console.log('Sending to ntfy:', ntfyUrl);
-        console.log('Message:', message);
-
-        try {
-            const response = await fetch(ntfyUrl, {
-                method: 'POST',
-                headers: {
-                    'Title': title,
-                    'Priority': 'high',
-                    'Tags': 'new,user',
-                    'Actions': `view, Open Admin Panel, https://pughlabs.github.io/MSLOG/admin.html`
-                },
-                body: message
-            });
-
-            console.log('ntfy response status:', response.status);
-
-            if (!response.ok) {
-                throw new Error(`ntfy.sh responded with ${response.status}`);
-            }
-
-            console.log(`Notification sent successfully for: ${member.email}`);
-            return { success: true };
-        } catch (error) {
-            console.error('Error sending ntfy notification:', error);
-            return { success: false, error: error.message };
-        }
+        return { success: true };
     });
 
 /**
@@ -176,6 +183,18 @@ exports.forwardContactMessage = functions.firestore
         const messageId = context.params.messageId;
 
         console.log('New contact message from:', msg.email);
+
+        // Also notify via Discord
+        await sendDiscord({
+            title: 'New Contact Message',
+            color: 0x063559,
+            fields: [
+                { name: 'From', value: `${msg.name || 'Unknown'} (${msg.email})`, inline: false },
+                { name: 'Message', value: msg.message || 'No message', inline: false }
+            ],
+            footer: { text: 'MSLOG Contact Form' },
+            timestamp: new Date().toISOString()
+        });
 
         const resend = getResend();
         if (!resend) {
