@@ -17,5 +17,8 @@ Thumbs.db
 .env.local
 .env.*.local
 
+# Sensitive files
+*.xlsx
+
 # Dependencies
 node_modules/
