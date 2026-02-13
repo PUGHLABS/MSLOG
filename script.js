@@ -536,7 +536,58 @@ async function loadDocuments() {
     }
 }
 
-async function addDocument(title, category, description, url) {
+async function addDocument(title, category, description, file) {
+    try {
+        if (!storage) throw new Error('Firebase Storage not available');
+        if (file.size > 10 * 1024 * 1024) throw new Error('File too large. Max 10MB.');
+
+        // Upload file to Firebase Storage
+        var safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        var storageRef = storage.ref('documents/' + safeName);
+        var uploadTask = storageRef.put(file);
+
+        // Show progress
+        var progressEl = document.getElementById('upload-progress');
+        var barEl = document.getElementById('upload-bar');
+        var pctEl = document.getElementById('upload-pct');
+        if (progressEl) progressEl.classList.remove('hidden');
+
+        await new Promise(function(resolve, reject) {
+            uploadTask.on('state_changed',
+                function(snapshot) {
+                    var pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    if (barEl) barEl.style.width = pct + '%';
+                    if (pctEl) pctEl.textContent = 'Uploading... ' + pct + '%';
+                },
+                function(error) { reject(error); },
+                function() { resolve(); }
+            );
+        });
+
+        var downloadUrl = await storageRef.getDownloadURL();
+        if (progressEl) progressEl.classList.add('hidden');
+
+        // Save metadata to Firestore
+        await db.collection('documents').add({
+            title: title,
+            category: category,
+            description: description,
+            url: downloadUrl,
+            storagePath: 'documents/' + safeName,
+            fileName: file.name,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: currentUser ? currentUser.uid : null
+        });
+        return { success: true };
+    } catch (e) {
+        console.error('Error adding document:', e);
+        var progressEl = document.getElementById('upload-progress');
+        if (progressEl) progressEl.classList.add('hidden');
+        return { success: false, message: e.message };
+    }
+}
+
+async function addDocumentUrl(title, category, description, url) {
     try {
         await db.collection('documents').add({
             title: title,
@@ -557,7 +608,21 @@ async function deleteDocument(docId) {
     if (!confirm('Are you sure you want to delete this document?')) return;
 
     try {
-        await db.collection('documents').doc(docId).delete();
+        // Get the document to find storage path
+        var docRef = db.collection('documents').doc(docId);
+        var docSnap = await docRef.get();
+        if (docSnap.exists) {
+            var data = docSnap.data();
+            // Delete file from Storage if it has a storagePath
+            if (data.storagePath && storage) {
+                try {
+                    await storage.ref(data.storagePath).delete();
+                } catch (storageErr) {
+                    console.warn('Could not delete storage file:', storageErr);
+                }
+            }
+        }
+        await docRef.delete();
         var item = document.querySelector('.doc-item[data-id="' + docId + '"]');
         if (item) item.remove();
     } catch (e) {
@@ -579,22 +644,50 @@ function initDocuments() {
         var title = document.getElementById('doc-title').value.trim();
         var category = document.getElementById('doc-category').value;
         var desc = document.getElementById('doc-desc').value.trim();
-        var url = document.getElementById('doc-url').value.trim();
         var btn = form.querySelector('button[type="submit"]');
         var success = document.getElementById('doc-success');
         var error = document.getElementById('doc-error');
 
+        // Determine source mode
+        var sourceRadio = document.querySelector('input[name="doc-source"]:checked');
+        var mode = sourceRadio ? sourceRadio.value : 'upload';
+        var fileInput = document.getElementById('doc-file');
+        var urlInput = document.getElementById('doc-url');
+
+        if (mode === 'upload') {
+            var file = fileInput ? fileInput.files[0] : null;
+            if (!file) {
+                error.textContent = 'Please select a PDF file.';
+                error.classList.remove('hidden');
+                return;
+            }
+        } else {
+            var url = urlInput ? urlInput.value.trim() : '';
+            if (!url) {
+                error.textContent = 'Please enter a URL.';
+                error.classList.remove('hidden');
+                return;
+            }
+        }
+
         btn.disabled = true;
-        btn.textContent = 'Adding...';
+        btn.textContent = mode === 'upload' ? 'Uploading...' : 'Adding...';
         success.classList.add('hidden');
         error.classList.add('hidden');
 
-        var result = await addDocument(title, category, desc, url);
+        var result = mode === 'upload'
+            ? await addDocument(title, category, desc, file)
+            : await addDocumentUrl(title, category, desc, url);
 
         if (result.success) {
             success.classList.remove('hidden');
             form.reset();
-            loadDocuments(); // Refresh the list
+            // Reset to upload mode after form reset
+            var uploadSection = document.getElementById('doc-upload-section');
+            var urlSection = document.getElementById('doc-url-section');
+            if (uploadSection) uploadSection.classList.remove('hidden');
+            if (urlSection) urlSection.classList.add('hidden');
+            loadDocuments();
             setTimeout(function() { success.classList.add('hidden'); }, 3000);
         } else {
             error.textContent = result.message || 'Failed to add document.';

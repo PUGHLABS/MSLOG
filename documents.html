@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
 </head>
 <body class="bg-[#f8fafc] min-h-screen flex flex-col">
@@ -102,8 +103,30 @@
                     <input type="text" id="doc-desc" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="Brief description of the document">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-[#7E8994] mb-1">Download URL (PDF link)</label>
-                    <input type="url" id="doc-url" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="https://drive.google.com/...">
+                    <label class="block text-xs font-medium text-[#7E8994] mb-1">Source</label>
+                    <div class="flex gap-3 mb-2">
+                        <label class="flex items-center gap-1.5 text-sm text-[#063559] cursor-pointer">
+                            <input type="radio" name="doc-source" value="upload" checked class="accent-[#F9812A]" onchange="document.getElementById('doc-upload-section').classList.remove('hidden'); document.getElementById('doc-url-section').classList.add('hidden');">
+                            Upload PDF
+                        </label>
+                        <label class="flex items-center gap-1.5 text-sm text-[#063559] cursor-pointer">
+                            <input type="radio" name="doc-source" value="url" class="accent-[#F9812A]" onchange="document.getElementById('doc-url-section').classList.remove('hidden'); document.getElementById('doc-upload-section').classList.add('hidden');">
+                            External URL
+                        </label>
+                    </div>
+                    <div id="doc-upload-section">
+                        <input type="file" id="doc-file" accept=".pdf" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#063559] file:text-white hover:file:bg-[#0a4a7a]">
+                        <p class="text-[#94A1B0] text-xs mt-1">Max file size: 10MB</p>
+                    </div>
+                    <div id="doc-url-section" class="hidden">
+                        <input type="url" id="doc-url" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="https://drive.google.com/...">
+                    </div>
+                </div>
+                <div id="upload-progress" class="hidden">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="upload-bar" class="bg-[#F9812A] h-2 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                    <p id="upload-pct" class="text-xs text-[#7E8994] mt-1">Uploading... 0%</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <button type="submit" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold">Add Document</button>
