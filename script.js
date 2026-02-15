@@ -1257,24 +1257,9 @@ function initGateCode() {
     });
 }
 
-// ─── QR Code expand on click ─────────────────────────────────────
+// ─── QR Code (hover scale on desktop only; mobile unchanged) ───────
 function initQRCode() {
-    var qr = document.getElementById('qr-code');
-    if (!qr) return;
-
-    var expanded = false;
-    qr.addEventListener('click', function() {
-        if (expanded) {
-            // Shrink back to original size
-            qr.classList.remove('w-[4.125rem]', 'h-[4.125rem]');
-            qr.classList.add('w-[2.75rem]', 'h-[2.75rem]');
-        } else {
-            // Expand by 50%
-            qr.classList.remove('w-[2.75rem]', 'h-[2.75rem]');
-            qr.classList.add('w-[4.125rem]', 'h-[4.125rem]');
-        }
-        expanded = !expanded;
-    });
+    // QR scale on hover is handled by CSS (md:hover:scale-[1.3]). No JS needed.
 }
 
 // ─── Init everything on DOMContentLoaded ─────────────────────────
