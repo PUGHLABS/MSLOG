@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Pending — MSLOG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="images/logo1.png">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body class="bg-[#f8fafc] min-h-screen flex flex-col">
+
+<!-- ─── NAV ─── -->
+<header>
+<nav class="bg-[#063559] shadow-md" role="navigation" aria-label="Main navigation">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-14">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG Logo" class="h-8 w-auto">
+                <span class="text-white font-bold text-lg tracking-tight">MSLOG</span>
+            </a>
+            <div class="flex items-center">
+                <button onclick="logout(); window.location.href='login.html';"
+                        class="text-xs bg-[#F9812A] hover:bg-[#e07020] text-white px-4 py-1.5 rounded font-semibold transition-colors">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+</header>
+
+<!-- ─── PENDING CARD ─── -->
+<main class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+
+            <!-- Header -->
+            <div class="page-header p-6 text-center">
+                <img src="images/logo1.png" alt="MSLOG" class="h-12 w-auto mx-auto mb-2 opacity-90">
+                <h1 class="text-white text-xl font-bold">Account Pending Approval</h1>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 text-center">
+
+                <!-- Clock icon -->
+                <div class="flex justify-center mb-4">
+                    <div class="bg-[#fff7ed] rounded-full p-4 border border-[#fed7aa]">
+                        <svg class="w-10 h-10 text-[#F9812A]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <h2 class="text-[#063559] font-semibold text-lg mb-2">Thanks for registering!</h2>
+                <p class="text-[#555] text-sm leading-relaxed mb-4">
+                    Your account has been created and is waiting for administrator approval.
+                    You'll receive an email at <strong id="pending-email" class="text-[#063559]"></strong>
+                    once your membership is confirmed.
+                </p>
+
+                <div class="bg-[#f0f7ff] border border-[#bfdbfe] rounded-lg px-4 py-3 text-left mb-5">
+                    <p class="text-[#1e40af] text-xs leading-relaxed">
+                        If you believe this is taking longer than expected, please
+                        <a href="contact.html" class="underline font-medium hover:text-[#063559]">contact the administrator</a>.
+                    </p>
+                </div>
+
+                <button onclick="logout(); window.location.href='login.html';"
+                        class="btn-primary w-full px-6 py-2.5 rounded-lg font-semibold text-sm">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <img src="images/logo1.png" alt="MSLOG" class="h-6 w-auto opacity-70">
+                <span class="text-sm font-semibold text-white">MSLOG</span>
+            </div>
+            <p class="text-xs text-center">Mount Spokane Land Owners Group &middot; Mount Spokane, WA</p>
+            <p class="text-xs">&copy; 2026 MSLOG. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        await authReadyPromise;
+
+        // If not logged in at all, send to login
+        if (!currentUser) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // If the account is already approved, send to dashboard
+        if (userProfile && userProfile.status === 'approved') {
+            window.location.href = 'dashboard.html';
+            return;
+        }
+
+        // Show the user's email in the message
+        var emailEl = document.getElementById('pending-email');
+        if (emailEl && currentUser.email) {
+            emailEl.textContent = currentUser.email;
+        }
+    });
+</script>
+</body>
+</html>

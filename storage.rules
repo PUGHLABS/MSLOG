@@ -4,12 +4,14 @@ service firebase.storage {
     match /documents/{fileName} {
       // Authenticated users can read (download PDFs)
       allow read: if request.auth != null;
-      // Authenticated users can upload PDFs (max 10MB)
+      // Only admins can upload PDFs (max 10MB)
       allow write: if request.auth != null
                    && request.resource.size < 10 * 1024 * 1024
-                   && request.resource.contentType == 'application/pdf';
-      // Allow delete for authenticated users
-      allow delete: if request.auth != null;
+                   && request.resource.contentType == 'application/pdf'
+                   && firestore.get(/databases/(default)/documents/members/$(request.auth.uid)).data.role == 'admin';
+      // Only admins can delete files
+      allow delete: if request.auth != null
+                    && firestore.get(/databases/(default)/documents/members/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }

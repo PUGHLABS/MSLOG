@@ -94,7 +94,10 @@ function logout() {
 // Wait for auth to be ready before checking
 async function requireAuth() {
     await authReadyPromise;
-    if (!isAuth()) window.location.href = 'login.html';
+    if (!isAuth()) { window.location.href = 'login.html'; return; }
+    if (userProfile && userProfile.status === 'pending') {
+        window.location.href = 'pending.html';
+    }
 }
 
 async function requireAdmin() {
@@ -235,7 +238,16 @@ function initLoginForm() {
 
         var result = await loginWithEmail(email, pass);
         if (result.success) {
-            window.location.href = 'dashboard.html';
+            try {
+                const user = auth.currentUser;
+                const doc = user ? await db.collection('members').doc(user.uid).get() : null;
+                const profile = doc && doc.exists ? doc.data() : null;
+                window.location.href = (profile && profile.status === 'pending')
+                    ? 'pending.html'
+                    : 'dashboard.html';
+            } catch (e) {
+                window.location.href = 'dashboard.html';
+            }
         } else {
             err.textContent = result.message || 'Invalid email or password.';
             err.classList.remove('hidden');
@@ -1208,6 +1220,7 @@ async function loadGateCode() {
         if (doc.exists) {
             var data = doc.data();
             display.textContent = data.code || '----';
+            display.classList.remove('text-[#94A1B0]');
             if (data.updatedAt) {
                 var date = data.updatedAt.toDate();
                 timeEl.textContent = 'Updated ' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
