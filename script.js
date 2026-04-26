@@ -556,7 +556,7 @@ async function addDocument(title, category, description, file) {
         // Upload file to Firebase Storage
         var safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         var storageRef = storage.ref('documents/' + safeName);
-        var uploadTask = storageRef.put(file);
+        var uploadTask = storageRef.put(file, { contentType: 'application/pdf' });
 
         // Show progress
         var progressEl = document.getElementById('upload-progress');
