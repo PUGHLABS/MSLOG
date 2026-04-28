@@ -1337,6 +1337,16 @@ function initQRCode() {
     // QR scale on hover is handled by CSS (md:hover:scale-[1.3]). No JS needed.
 }
 
+// ─── Page View Tracking ──────────────────────────────────────────
+function trackPageView() {
+    if (typeof db === 'undefined') return;
+    var page = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
+    var update = { total: firebase.firestore.FieldValue.increment(1) };
+    update['pages.' + page] = firebase.firestore.FieldValue.increment(1);
+    db.collection('settings').doc('analytics').set(update, { merge: true })
+        .catch(function(e) { console.warn('Analytics write failed:', e); });
+}
+
 // ─── Notification Preferences ────────────────────────────────────
 var NOTIF_TOPICS = [
     { key: 'calendar', label: 'Calendar',  icon: '📅' },
@@ -1397,6 +1407,7 @@ async function saveNotificationSettings() {
 document.addEventListener('DOMContentLoaded', function() {
     initHamburger();
     initNav();
+    if (authReadyPromise) authReadyPromise.then(function() { if (isAuth()) trackPageView(); });
     initRegForm();
     initLoginForm();
     initWeather();

@@ -58,6 +58,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Analytics - authenticated users can increment counters, only admin can read
+    match /settings/analytics {
+      allow read: if isAdmin();
+      allow update: if isAuth();
+      allow create: if isAuth();
+    }
+
     // Documents - authenticated users can read, only admin can write
     match /documents/{docId} {
       allow read: if isAuth();
