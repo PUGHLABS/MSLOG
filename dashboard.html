@@ -154,6 +154,19 @@
                 </div>
             </div>
         </div>
+
+        <!-- Notification Preferences -->
+        <div class="mt-6 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
+            <div class="flex items-center justify-between mb-1">
+                <h2 class="font-bold text-[#063559] text-xs uppercase tracking-wide">Email Notifications</h2>
+                <span id="notif-save-status" class="text-xs text-green-600 hidden">Saved</span>
+            </div>
+            <p class="text-[#7E8994] text-xs mb-4">You're opted in by default. Uncheck to stop receiving emails for that section.</p>
+            <div id="notif-settings" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <p class="text-[#7E8994] text-sm col-span-4">Loading...</p>
+            </div>
+        </div>
+
     </div>
 </main>
 
@@ -180,6 +193,7 @@
 
         // Load dashboard stats from Firestore
         loadDashboardStats();
+        initNotificationSettings();
     });
 
     async function loadDashboardStats() {

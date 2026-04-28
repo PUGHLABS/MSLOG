@@ -1337,6 +1337,62 @@ function initQRCode() {
     // QR scale on hover is handled by CSS (md:hover:scale-[1.3]). No JS needed.
 }
 
+// ─── Notification Preferences ────────────────────────────────────
+var NOTIF_TOPICS = [
+    { key: 'calendar', label: 'Calendar',  icon: '📅' },
+    { key: 'gateCode', label: 'Gate Code', icon: '🔑' },
+    { key: 'videos',   label: 'Videos',    icon: '🎥' },
+    { key: 'forum',    label: 'Forum',     icon: '💬' }
+];
+
+async function initNotificationSettings() {
+    var container = document.getElementById('notif-settings');
+    if (!container || !currentUser) return;
+
+    try {
+        var doc = await db.collection('members').doc(currentUser.uid).get();
+        var prefs = (doc.exists && doc.data().notifications) || {};
+
+        function isOn(key) {
+            if (prefs.email === false) return false;
+            if (!prefs.topics) return true;
+            return prefs.topics[key] !== false;
+        }
+
+        container.innerHTML = NOTIF_TOPICS.map(function(t) {
+            return '<label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-[#f0f4f8] transition-colors">' +
+                '<input type="checkbox" class="notif-cb w-4 h-4 accent-[#F9812A]" data-topic="' + t.key + '"' + (isOn(t.key) ? ' checked' : '') + '>' +
+                '<span class="text-sm text-[#334155]">' + t.icon + ' ' + t.label + '</span>' +
+                '</label>';
+        }).join('');
+
+        container.querySelectorAll('.notif-cb').forEach(function(cb) {
+            cb.addEventListener('change', saveNotificationSettings);
+        });
+    } catch (e) {
+        console.error('Error loading notification settings:', e);
+        container.innerHTML = '<p class="text-red-500 text-sm col-span-4">Could not load preferences.</p>';
+    }
+}
+
+async function saveNotificationSettings() {
+    if (!currentUser) return;
+    var topics = {};
+    document.querySelectorAll('.notif-cb').forEach(function(cb) {
+        topics[cb.dataset.topic] = cb.checked;
+    });
+    try {
+        await db.collection('members').doc(currentUser.uid).update({ 'notifications.topics': topics });
+        var status = document.getElementById('notif-save-status');
+        if (status) {
+            status.classList.remove('hidden');
+            setTimeout(function() { status.classList.add('hidden'); }, 2000);
+        }
+    } catch (e) {
+        console.error('Error saving notification settings:', e);
+    }
+}
+
 // ─── Init everything on DOMContentLoaded ─────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     initHamburger();

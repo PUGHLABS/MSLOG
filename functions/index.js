@@ -46,6 +46,72 @@ async function sendDiscord(embed) {
     }
 }
 
+// ─── Notification helpers ────────────────────────────────────────
+
+/**
+ * Returns emails of all approved members opted into a given topic.
+ * Missing notifications field = opted in (opt-out model).
+ */
+async function getOptedInEmails(topic) {
+    const snapshot = await admin.firestore()
+        .collection('members')
+        .where('status', '==', 'approved')
+        .get();
+
+    const emails = [];
+    snapshot.forEach(doc => {
+        const m = doc.data();
+        if (!m.email) return;
+        const n = m.notifications;
+        if (!n) { emails.push(m.email); return; }           // no prefs → opted in
+        if (n.email === false) return;                       // master email off
+        if (!n.topics) { emails.push(m.email); return; }    // no topic prefs → all on
+        if (n.topics[topic] !== false) emails.push(m.email); // topic on or missing → opted in
+    });
+    return emails;
+}
+
+/** Shared HTML email wrapper matching MSLOG brand. */
+function emailWrapper(bodyHtml) {
+    return `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <div style="background:#063559;padding:20px;text-align:center;">
+            <h1 style="color:white;margin:0;">MSLOG</h1>
+            <p style="color:#94A1B0;margin:4px 0 0;">Mount Spokane Land Owners Group</p>
+        </div>
+        <div style="padding:30px;background:#f8fafc;">
+            ${bodyHtml}
+            <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
+            <p style="color:#999;font-size:12px;margin:0;">
+                You're receiving this because you're an MSLOG member with email notifications enabled.
+                <a href="https://mtspokanelandgroup.org/dashboard.html" style="color:#F9812A;">Manage preferences</a>
+            </p>
+        </div>
+        <div style="background:#063559;padding:15px;text-align:center;">
+            <p style="color:#94A1B0;margin:0;font-size:12px;">Mount Spokane Land Owners Group &bull; Mount Spokane, WA</p>
+        </div>
+    </div>`;
+}
+
+/**
+ * Sends a notification email to all opted-in members for a topic.
+ * Sends individually so one bad address doesn't block the rest.
+ */
+async function sendNotifications(topic, subject, bodyHtml) {
+    const emails = await getOptedInEmails(topic);
+    if (!emails.length) return;
+
+    const resend = getResend();
+    if (!resend) return;
+
+    const html = emailWrapper(bodyHtml);
+    await Promise.allSettled(emails.map(to =>
+        resend.emails.send({ from: 'MSLOG <noreply@mtspokanelandgroup.org>', to, subject, html })
+    ));
+    console.log(`Sent "${subject}" to ${emails.length} members`);
+}
+
+// ─── Member / registration notifications ─────────────────────────
+
 /**
  * Triggered when a new member document is created in Firestore.
  * Sends a Discord notification to alert admin of pending registration.
@@ -237,4 +303,85 @@ exports.forwardContactMessage = functions.firestore
             console.error('Error forwarding contact message:', error);
             return { success: false, error: error.message };
         }
+    });
+
+// ─── Member-facing content notifications ─────────────────────────
+
+exports.notifyNewEvent = functions.firestore
+    .document('events/{eventId}')
+    .onCreate(async (snap) => {
+        const e = snap.data();
+        const dateStr = e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '';
+        await sendNotifications('calendar', `New Event: ${e.title}`,
+            `<h2 style="color:#063559;margin-top:0;">${e.title}</h2>
+             ${dateStr ? `<p style="color:#333;"><strong>Date:</strong> ${dateStr}</p>` : ''}
+             ${e.time ? `<p style="color:#333;"><strong>Time:</strong> ${e.time}</p>` : ''}
+             ${e.location ? `<p style="color:#333;"><strong>Location:</strong> ${e.location}</p>` : ''}
+             ${e.description ? `<p style="color:#555;line-height:1.6;">${e.description}</p>` : ''}
+             <div style="text-align:center;margin:24px 0;">
+                 <a href="https://mtspokanelandgroup.org/calendar.html"
+                    style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+                     View Calendar
+                 </a>
+             </div>`
+        );
+        return null;
+    });
+
+exports.notifyNewVideo = functions.firestore
+    .document('videos/{videoId}')
+    .onCreate(async (snap) => {
+        const v = snap.data();
+        await sendNotifications('videos', `New Video: ${v.title}`,
+            `<h2 style="color:#063559;margin-top:0;">${v.title}</h2>
+             ${v.category ? `<p style="color:#7E8994;font-size:13px;text-transform:uppercase;letter-spacing:.05em;">${v.category}</p>` : ''}
+             ${v.description ? `<p style="color:#555;line-height:1.6;">${v.description}</p>` : ''}
+             <div style="text-align:center;margin:24px 0;">
+                 <a href="https://mtspokanelandgroup.org/videos.html"
+                    style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+                     Watch Video
+                 </a>
+             </div>`
+        );
+        return null;
+    });
+
+exports.notifyNewThread = functions.firestore
+    .document('threads/{threadId}')
+    .onCreate(async (snap) => {
+        const t = snap.data();
+        await sendNotifications('forum', `New Discussion: ${t.title}`,
+            `<h2 style="color:#063559;margin-top:0;">${t.title}</h2>
+             <p style="color:#7E8994;font-size:13px;">Posted by ${t.authorName || 'A member'}</p>
+             <div style="text-align:center;margin:24px 0;">
+                 <a href="https://mtspokanelandgroup.org/forum.html"
+                    style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+                     View Discussion
+                 </a>
+             </div>`
+        );
+        return null;
+    });
+
+exports.notifyGateCodeChange = functions.firestore
+    .document('settings/gatecode')
+    .onWrite(async (change) => {
+        const before = change.before.exists ? change.before.data() : null;
+        const after = change.after.exists ? change.after.data() : null;
+        if (!after) return null;
+        if (before && before.code === after.code) return null; // no actual change
+
+        await sendNotifications('gateCode', 'Gate Code Updated',
+            `<h2 style="color:#063559;margin-top:0;">The gate code has been updated.</h2>
+             <p style="color:#555;line-height:1.6;">
+                 The MSLOG gate code has changed. Log in to the member portal to see the current code.
+             </p>
+             <div style="text-align:center;margin:24px 0;">
+                 <a href="https://mtspokanelandgroup.org/gatecode.html"
+                    style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+                     View Gate Code
+                 </a>
+             </div>`
+        );
+        return null;
     });
