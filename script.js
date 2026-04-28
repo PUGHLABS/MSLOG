@@ -1364,9 +1364,8 @@ async function initNotificationSettings() {
         var prefs = (doc.exists && doc.data().notifications) || {};
 
         function isOn(key) {
-            if (prefs.email === false) return false;
-            if (!prefs.topics) return true;
-            return prefs.topics[key] !== false;
+            if (!prefs.topics) return false;
+            return prefs.topics[key] === true;
         }
 
         container.innerHTML = NOTIF_TOPICS.map(function(t) {

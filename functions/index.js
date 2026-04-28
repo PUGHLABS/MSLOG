@@ -49,8 +49,8 @@ async function sendDiscord(embed) {
 // ─── Notification helpers ────────────────────────────────────────
 
 /**
- * Returns emails of all approved members opted into a given topic.
- * Missing notifications field = opted in (opt-out model).
+ * Returns emails of all approved members who have explicitly opted into a topic.
+ * Missing notifications field = NOT subscribed (opt-in model).
  */
 async function getOptedInEmails(topic) {
     const snapshot = await admin.firestore()
@@ -63,10 +63,8 @@ async function getOptedInEmails(topic) {
         const m = doc.data();
         if (!m.email) return;
         const n = m.notifications;
-        if (!n) { emails.push(m.email); return; }           // no prefs → opted in
-        if (n.email === false) return;                       // master email off
-        if (!n.topics) { emails.push(m.email); return; }    // no topic prefs → all on
-        if (n.topics[topic] !== false) emails.push(m.email); // topic on or missing → opted in
+        if (!n || !n.topics) return;                        // no prefs → not subscribed
+        if (n.topics[topic] === true) emails.push(m.email); // only explicit opt-in counts
     });
     return emails;
 }
