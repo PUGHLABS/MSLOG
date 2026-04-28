@@ -95,8 +95,8 @@ function logout() {
 async function requireAuth() {
     await authReadyPromise;
     if (!isAuth()) { window.location.href = 'login.html'; return; }
-    if (userProfile && userProfile.status === 'pending') {
-        window.location.href = 'pending.html';
+    if (!userProfile || userProfile.status !== 'approved') {
+        window.location.href = 'pending.html'; return;
     }
 }
 
