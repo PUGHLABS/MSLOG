@@ -43,7 +43,7 @@
                                 <a href="calendar.html"
                                     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
                                 <a href="gatecode.html"
-                                    class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate
+                                    class="nav-link admin-only text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate
                                     Code</a>
                                 <a href="videos.html"
                                     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
@@ -81,7 +81,7 @@
                         <a href="calendar.html"
                             class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
                         <a href="gatecode.html"
-                            class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate
+                            class="nav-link admin-only block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate
                             Code</a>
                         <a href="videos.html"
                             class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
@@ -102,15 +102,17 @@
             class="absolute inset-0 w-full h-full object-cover">
         <div class="hero-overlay absolute inset-0"></div>
 
+        <!-- Logo: anchored near top, 30% larger, 30% transparent -->
+        <img src="images/logo1.png" alt="MSLOG"
+            class="absolute top-4 md:top-6 left-1/2 -translate-x-1/2 h-[13.9rem] md:h-[25.4rem] md:max-h-[26vh] w-auto opacity-80 drop-shadow-lg rounded-2xl z-20">
+
         <div
             class="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-4 pb-40 md:pb-24">
-            <img src="images/logo1.png" alt="MSLOG"
-                class="h-[10.7rem] md:h-[19.5rem] w-auto mb-[15rem] drop-shadow-lg rounded-2xl">
             <h1 class="text-4xl md:text-6xl font-bold text-white mb-2 drop-shadow">Mount Spokane</h1>
             <h2 class="text-xl md:text-3xl text-[#c8d4e0] mb-4 font-light">Land Owners Group</h2>
             <p class="text-[#c8d4e0] max-w-xl text-sm md:text-base leading-relaxed mb-8">
                 A private communication portal for landowners on Mount Spokane.
-                Access gate code, property records, community events, and shared resources.
+                Access property records, community events, and shared resources.
             </p>
             <div class="flex items-center justify-center gap-3">
                 <img id="qr-code"
@@ -130,7 +132,7 @@
         </div>
 
         <!-- Weather widget — hidden on mobile, bottom right on desktop -->
-        <div class="hidden md:block absolute md:bottom-20 md:right-8 md:w-auto md:max-w-sm z-10">
+        <div class="hidden md:block absolute md:bottom-20 md:right-8 md:w-auto md:max-w-sm z-10 md:pr-3">
             <div id="weather-widget"></div>
         </div>
     </section>
@@ -163,7 +165,7 @@
                     <div class="text-3xl mb-3">📋</div>
                     <h3 class="font-semibold text-[#063559] mb-2">Resources</h3>
                     <p class="text-[#7E8994] text-sm leading-relaxed">
-                        Gate codes, property records, meeting minutes, bylaws,
+                        Property records, meeting minutes,
                         and community documents — all in one place.
                     </p>
                 </div>

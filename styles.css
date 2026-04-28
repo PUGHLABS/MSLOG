@@ -48,7 +48,7 @@ html {
 @media (min-width: 768px) {
     .weather-desktop {
         transform: scale(1.15);
-        transform-origin: top left;
+        transform-origin: bottom right;
         margin-bottom: 1.5rem;
     }
     /* Normal size on dashboard to prevent overlap */

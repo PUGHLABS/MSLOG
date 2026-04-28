@@ -34,7 +34,7 @@
                         <a href="directory.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Directory</a>
                         <a href="documents.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Documents</a>
                         <a href="calendar.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Calendar</a>
-                        <a href="gatecode.html"   class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
+                        <a href="gatecode.html"   class="nav-link admin-only text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
                         <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
                         <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
                         <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
@@ -58,7 +58,7 @@
                 <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
                 <a href="documents.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Documents</a>
                 <a href="calendar.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Calendar</a>
-                <a href="gatecode.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
+                <a href="gatecode.html"   class="nav-link admin-only block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
                 <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
                 <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
                 <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
@@ -76,7 +76,7 @@
         <!-- Header -->
         <div class="page-header rounded-xl p-6 mb-6">
             <h1 class="text-white text-2xl font-bold">Documents</h1>
-            <p class="text-[#94A1B0] text-sm mt-1">Bylaws, meeting minutes, maps, and shared resources</p>
+            <p class="text-[#94A1B0] text-sm mt-1">Meeting minutes, maps, and shared resources</p>
         </div>
 
         <!-- Admin: Add Document Form -->
@@ -91,7 +91,6 @@
                     <div>
                         <label class="block text-xs font-medium text-[#7E8994] mb-1">Category</label>
                         <select id="doc-category" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
-                            <option value="bylaws">Bylaws</option>
                             <option value="minutes">Minutes</option>
                             <option value="resources">Resources</option>
                             <option value="maps">Maps</option>
@@ -140,7 +139,6 @@
         <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
             <div class="flex flex-wrap gap-2">
                 <button class="cat-pill active" data-cat="all">All</button>
-                <button class="cat-pill" data-cat="bylaws">Bylaws</button>
                 <button class="cat-pill" data-cat="minutes">Minutes</button>
                 <button class="cat-pill" data-cat="resources">Resources</button>
                 <button class="cat-pill" data-cat="maps">Maps</button>

@@ -102,10 +102,19 @@ async function sendNotifications(topic, subject, bodyHtml) {
     if (!resend) return;
 
     const html = emailWrapper(bodyHtml);
-    await Promise.allSettled(emails.map(to =>
+    const results = await Promise.allSettled(emails.map(to =>
         resend.emails.send({ from: 'MSLOG <noreply@mtspokanelandgroup.org>', to, subject, html })
     ));
-    console.log(`Sent "${subject}" to ${emails.length} members`);
+    results.forEach((r, i) => {
+        if (r.status === 'rejected') {
+            console.error(`Email to ${emails[i]} failed:`, r.reason);
+        } else if (r.value?.error) {
+            console.error(`Email to ${emails[i]} rejected by Resend:`, r.value.error);
+        } else {
+            console.log(`Email to ${emails[i]} sent OK, id:`, r.value?.data?.id);
+        }
+    });
+    console.log(`Attempted "${subject}" to ${emails.length} members`);
 }
 
 // ─── Member / registration notifications ─────────────────────────
@@ -189,8 +198,7 @@ exports.sendApprovalEmail = functions.firestore
                                 <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 20px 0;">
                                     <h3 style="color: #063559; margin-top: 0;">What you can access:</h3>
                                     <ul style="color: #333; line-height: 1.8;">
-                                        <li>Current gate codes</li>
-                                        <li>Community documents & bylaws</li>
+                                        <li>Community documents</li>
                                         <li>Member directory</li>
                                         <li>Event calendar</li>
                                         <li>Discussion forum</li>
