@@ -200,3 +200,113 @@ html {
 .cat-pill:not(.active):hover, .vid-pill:not(.active):hover {
     background-color: #cbd5e1;
 }
+
+/* ─── Forum rich text editor ────────────────────────────────── */
+.forum-editor .ql-toolbar {
+    border: 1px solid #94A1B0;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    background: #f8fafc;
+}
+.forum-editor .ql-container {
+    border: 1px solid #94A1B0;
+    border-radius: 0 0 8px 8px;
+    font-size: 0.875rem;
+    min-height: 80px;
+}
+.forum-editor .ql-editor { min-height: 80px; }
+.forum-editor .ql-editor:focus { outline: none; }
+.forum-editor .ql-container:focus-within {
+    border-color: #F9812A;
+    box-shadow: 0 0 0 3px rgba(249, 129, 42, 0.2);
+}
+
+/* Rendered forum post body */
+.forum-body ul { list-style-type: disc; padding-left: 1.5rem; margin: 0.25rem 0; }
+.forum-body ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0.25rem 0; }
+.forum-body li { margin-bottom: 0.2rem; }
+.forum-body p { margin-bottom: 0.4rem; }
+.forum-body p:last-child { margin-bottom: 0; }
+.forum-body strong { font-weight: 600; }
+.forum-body em { font-style: italic; }
+.forum-body u { text-decoration: underline; }
+
+/* ─── Dark Mode ──────────────────────────────────────────────── */
+html.dark {
+    color-scheme: dark;
+}
+
+html.dark body {
+    background-color: #0f172a !important;
+    color: #e2e8f0;
+}
+
+html.dark .bg-white {
+    background-color: #1e293b !important;
+}
+
+/* Custom text color overrides */
+html.dark .text-\[\#063559\] { color: #7dd3fc !important; }
+html.dark .text-\[\#334155\] { color: #e2e8f0 !important; }
+html.dark .text-\[\#7E8994\] { color: #94a3b8 !important; }
+
+/* Borders */
+html.dark .border-\[\#e2e8f0\] { border-color: #334155 !important; }
+
+/* Hover bg */
+html.dark .hover\:bg-\[\#f0f4f8\]:hover { background-color: #293548 !important; }
+
+/* Form inputs */
+html.dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.dark textarea,
+html.dark select {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+    color: #e2e8f0 !important;
+}
+
+/* Scrollbar */
+html.dark ::-webkit-scrollbar-track { background: #1e293b; }
+html.dark ::-webkit-scrollbar-thumb { background: #475569; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #7dd3fc; }
+
+/* Data table */
+html.dark .data-table th { background-color: #0a1929; }
+html.dark .data-table td { color: #e2e8f0; border-bottom-color: #334155; }
+html.dark .data-table tbody tr:nth-child(even) { background-color: #162032; }
+html.dark .data-table tbody tr:hover { background-color: #293548; }
+
+/* Calendar */
+html.dark .cal-day:not(.empty):hover { background-color: #293548; }
+
+/* Gate code */
+html.dark .gate-code-display { color: #7dd3fc; }
+
+/* Category / video pills */
+html.dark .cat-pill:not(.active),
+html.dark .vid-pill:not(.active) {
+    background-color: #334155;
+    color: #94a3b8;
+}
+html.dark .cat-pill:not(.active):hover,
+html.dark .vid-pill:not(.active):hover { background-color: #475569; }
+
+/* Quill editor dark mode */
+html.dark .forum-editor .ql-toolbar {
+    background: #1e293b;
+    border-color: #475569;
+}
+html.dark .forum-editor .ql-container {
+    background: #1e293b;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+html.dark .forum-editor .ql-editor.ql-blank::before { color: #64748b; }
+html.dark .forum-editor .ql-stroke { stroke: #94a3b8 !important; }
+html.dark .forum-editor .ql-fill { fill: #94a3b8 !important; }
+html.dark .forum-editor .ql-picker-label { color: #94a3b8; }
+html.dark .forum-editor .ql-toolbar button:hover .ql-stroke { stroke: #7dd3fc !important; }
+html.dark .forum-editor .ql-toolbar button:hover .ql-fill { fill: #7dd3fc !important; }
+
+/* Forum body dark mode */
+html.dark .forum-body { color: #94a3b8; }

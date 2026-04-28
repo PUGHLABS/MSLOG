@@ -105,6 +105,33 @@ async function requireAdmin() {
     if (!isAdmin()) window.location.href = 'dashboard.html';
 }
 
+// ─── Dark Mode ───────────────────────────────────────────────────
+function initDarkMode() {
+    if (localStorage.getItem('darkMode') !== '0') {
+        document.documentElement.classList.add('dark');
+    }
+}
+
+function toggleDarkMode() {
+    var isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDark ? '1' : '0');
+    document.querySelectorAll('.dark-toggle').forEach(function(btn) {
+        btn.innerHTML = isDark ? _sunSVG() : _moonSVG();
+        btn.title = isDark ? 'Light mode' : 'Dark mode';
+    });
+}
+
+function _moonSVG() {
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+}
+
+function _sunSVG() {
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+}
+
+// Apply dark mode immediately when script loads (avoids flash)
+initDarkMode();
+
 // ─── Hamburger Menu (runs once) ─────────────────────────────────
 function initHamburger() {
     var btn  = document.getElementById('hamburger');
@@ -132,14 +159,18 @@ function initNav() {
     var dMem   = document.getElementById('nav-desktop-member');
     var mMem   = document.getElementById('nav-mobile-member');
 
+    var isDark = document.documentElement.classList.contains('dark');
+    var dToggle = '<button onclick="toggleDarkMode()" class="dark-toggle text-[#94A1B0] hover:text-white p-1.5 rounded transition-colors mr-2" title="' + (isDark ? 'Light mode' : 'Dark mode') + '" aria-label="Toggle dark mode">' + (isDark ? _sunSVG() : _moonSVG()) + '</button>';
+    var mToggle = '<div class="border-t border-white border-opacity-20 mt-2 pt-2 flex items-center px-3 py-2"><button onclick="toggleDarkMode()" class="dark-toggle flex items-center gap-2 text-[#94A1B0] hover:text-white text-sm rounded transition-colors">' + (isDark ? _sunSVG() : _moonSVG()) + '<span class="ml-2">' + (isDark ? 'Light mode' : 'Dark mode') + '</span></button></div>';
+
     if (auth) {
-        if (dAuth) dAuth.innerHTML =
+        if (dAuth) dAuth.innerHTML = dToggle +
             '<span class="text-[#94A1B0] text-sm mr-2">' + auth.name + '</span>' +
             '<button onclick="doLogout()" class="text-xs bg-[#7E8994] hover:bg-[#6b7a85] text-white px-3 py-1 rounded">Logout</button>';
         if (mAuth) mAuth.innerHTML =
             '<div class="border-t border-white border-opacity-20 pt-3 mt-2">' +
             '<p class="text-[#94A1B0] text-xs mb-2">Signed in as ' + auth.name + '</p>' +
-            '<button onclick="doLogout()" class="w-full text-xs bg-[#7E8994] hover:bg-[#6b7a85] text-white px-3 py-2 rounded">Logout</button></div>';
+            '<button onclick="doLogout()" class="w-full text-xs bg-[#7E8994] hover:bg-[#6b7a85] text-white px-3 py-2 rounded">Logout</button></div>' + mToggle;
         if (dMem) dMem.classList.remove('hidden');
         if (mMem) mMem.classList.remove('hidden');
 
@@ -163,11 +194,11 @@ function initNav() {
         if (heroRegBtn) heroRegBtn.classList.remove('hidden');
         if (heroLoginPrompt) heroLoginPrompt.classList.remove('hidden');
         if (heroDashBtn) heroDashBtn.classList.add('hidden');
-        if (dAuth) dAuth.innerHTML =
+        if (dAuth) dAuth.innerHTML = dToggle +
             '<a href="login.html" class="nav-link text-xs bg-[#F9812A] hover:bg-[#e07020] text-white px-4 py-1.5 rounded font-semibold">Login</a>';
         if (mAuth) mAuth.innerHTML =
             '<div class="border-t border-white border-opacity-20 pt-3 mt-2">' +
-            '<a href="login.html" class="block text-xs text-center bg-[#F9812A] hover:bg-[#e07020] text-white px-3 py-2 rounded">Login</a></div>';
+            '<a href="login.html" class="block text-xs text-center bg-[#F9812A] hover:bg-[#e07020] text-white px-3 py-2 rounded">Login</a></div>' + mToggle;
         if (dMem) dMem.classList.add('hidden');
         if (mMem) mMem.classList.add('hidden');
     }
@@ -1082,6 +1113,20 @@ function initEvents() {
 }
 
 // ─── Forum (Firestore CRUD) ──────────────────────────────────────
+function sanitizeHtml(html) {
+    if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(html);
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    div.querySelectorAll('script,iframe,object,embed,form').forEach(function(el) { el.remove(); });
+    div.querySelectorAll('*').forEach(function(el) {
+        Array.from(el.attributes).forEach(function(attr) {
+            if (/^on/i.test(attr.name) || attr.name === 'href' && /^javascript:/i.test(attr.value)) {
+                el.removeAttribute(attr.name);
+            }
+        });
+    });
+    return div.innerHTML;
+}
 function isNewThread(createdAt) {
     if (!createdAt) return false;
     var threeDaysAgo = new Date();
@@ -1106,7 +1151,7 @@ function renderThreadItem(doc, isAdmin, currentUserId) {
         newBadge +
         '</div>' +
         '<p class="text-[#7E8994] text-xs mt-1">Posted by ' + escapeHtml(data.authorName || 'Unknown') + ' &mdash; ' + dateStr + ' &middot; ' + (data.replyCount || 0) + ' replies' + deleteBtn + '</p>' +
-        (data.body ? '<p class="mt-2 text-sm text-[#64748b]">' + escapeHtml(data.body) + '</p>' : '') +
+        (data.body ? '<div class="forum-body mt-2 text-sm text-[#64748b]">' + sanitizeHtml(data.body) + '</div>' : '') +
         '</div>';
 }
 
@@ -1174,10 +1219,26 @@ function initForum() {
     var form = document.getElementById('new-thread-form');
     if (!form) return;
 
+    // Initialize Quill rich text editor
+    var quill = null;
+    if (typeof Quill !== 'undefined' && document.getElementById('thread-body-editor')) {
+        quill = new Quill('#thread-body-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Share your thoughts…'
+        });
+    }
+
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         var title = document.getElementById('thread-title').value.trim();
-        var body = document.getElementById('thread-body').value.trim();
+        var body = quill ? (quill.getLength() > 1 ? quill.root.innerHTML : '') : '';
         var btn = form.querySelector('button[type="submit"]');
         var success = document.getElementById('thread-success');
         var error = document.getElementById('thread-error');
@@ -1194,6 +1255,7 @@ function initForum() {
         if (result.success) {
             if (success) success.classList.remove('hidden');
             form.reset();
+            if (quill) quill.setContents([]);
             document.getElementById('new-thread-panel').classList.add('hidden');
             loadThreads(); // Refresh the list
             if (success) setTimeout(function() { success.classList.add('hidden'); }, 3000);
