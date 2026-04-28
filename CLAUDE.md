@@ -82,8 +82,8 @@ storageRef.put(file, { contentType: 'application/pdf' })
 |---|---|
 | Guest | Public pages only (index, contact) |
 | Member (pending) | Redirected to `pending.html` |
-| Member (active) | All member pages |
-| Admin | All pages + admin controls |
+| Member (active) | All member pages except gate code |
+| Admin | All pages + gate code + admin controls |
 
 Role stored as `role` field (`'member'` or `'admin'`) in `members/{uid}` Firestore document.
 
@@ -91,7 +91,7 @@ Role stored as `role` field (`'member'` or `'admin'`) in `members/{uid}` Firesto
 
 ## Auth Pattern
 
-`script.js` uses a promise-based auth gate. Pages that require auth call `requireAuth()` which awaits `authReadyPromise` before redirecting. All `init*()` functions are called from `DOMContentLoaded` in `script.js` — they run before auth resolves, so they must not depend on auth state at call time.
+`script.js` uses a promise-based auth gate. Pages that require auth call `requireAuth()` which awaits `authReadyPromise` before redirecting. Admin-only pages call `requireAdmin()` instead, which redirects non-admins to `dashboard.html`. All `init*()` functions are called from `DOMContentLoaded` in `script.js` — they run before auth resolves, so they must not depend on auth state at call time.
 
 ---
 

@@ -12,7 +12,7 @@ Private communication portal for landowners on Mount Spokane, WA.
 | Member Directory | `directory.html` | Member |
 | Documents | `documents.html` | Member |
 | Calendar & Events | `calendar.html` | Member |
-| IEP Gate Code | `gatecode.html` | Member |
+| IEP Gate Code | `gatecode.html` | Admin |
 | Videos | `videos.html` | Member |
 | Discussion Forum | `forum.html` | Member |
 | Admin Dashboard | `admin.html` | Admin | 
