@@ -171,6 +171,19 @@
             </div>
         </div>
 
+        <!-- Maintenance -->
+        <div class="mt-6 bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
+            <h2 class="font-bold text-[#063559] mb-3 text-xs uppercase tracking-wide">Maintenance</h2>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <p class="text-sm text-[#334155] font-medium">Backfill notification opt-ins</p>
+                    <p class="text-[#7E8994] text-xs mt-0.5">Set every existing member to opted-in for all email topics. Existing explicit opt-outs are preserved.</p>
+                </div>
+                <button id="backfill-notif-btn" onclick="backfillNotificationOptIns()" class="text-xs bg-[#063559] text-white hover:bg-[#0a4a78] px-4 py-2 rounded font-medium transition-colors whitespace-nowrap">Run backfill</button>
+            </div>
+            <p id="backfill-notif-status" class="text-xs mt-2 hidden"></p>
+        </div>
+
     </div>
 </main>
 
@@ -390,6 +403,72 @@ async function loadPageViews(db) {
     } catch (e) {
         console.error('Error loading page views:', e);
         if (statEl) statEl.textContent = '—';
+    }
+}
+
+async function backfillNotificationOptIns() {
+    const btn = document.getElementById('backfill-notif-btn');
+    const status = document.getElementById('backfill-notif-status');
+    if (!confirm('Set every existing member to opted-in for all email topics?\n\nMembers who explicitly opted out of a topic will keep that opt-out.')) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Running…';
+    status.classList.remove('hidden', 'text-red-600', 'text-green-600');
+    status.classList.add('text-[#7E8994]');
+    status.textContent = 'Reading members…';
+
+    try {
+        const db = firebase.firestore();
+        const snap = await db.collection('members').get();
+        const ALL_TOPICS = ['calendar', 'videos', 'forum'];
+        let updated = 0;
+        let skipped = 0;
+
+        // Chunk into batches of 400 (Firestore limit is 500 ops per batch)
+        let batch = db.batch();
+        let opsInBatch = 0;
+        const commits = [];
+
+        snap.forEach(doc => {
+            const data = doc.data();
+            const existing = (data.notifications && data.notifications.topics) || {};
+            const merged = {};
+            let changed = false;
+            ALL_TOPICS.forEach(t => {
+                if (existing[t] === false) {
+                    merged[t] = false; // preserve explicit opt-outs
+                } else {
+                    merged[t] = true;
+                    if (existing[t] !== true) changed = true;
+                }
+            });
+            if (!changed) { skipped++; return; }
+            batch.update(doc.ref, { 'notifications.topics': merged });
+            updated++;
+            opsInBatch++;
+            if (opsInBatch >= 400) {
+                commits.push(batch.commit());
+                batch = db.batch();
+                opsInBatch = 0;
+            }
+        });
+        if (opsInBatch > 0) commits.push(batch.commit());
+
+        status.textContent = `Writing ${updated} member updates…`;
+        await Promise.all(commits);
+
+        status.classList.remove('text-[#7E8994]');
+        status.classList.add('text-green-600');
+        status.textContent = `Done. Updated ${updated} member(s); ${skipped} already opted in.`;
+        btn.textContent = 'Run again';
+    } catch (e) {
+        console.error('Backfill failed:', e);
+        status.classList.remove('text-[#7E8994]');
+        status.classList.add('text-red-600');
+        status.textContent = 'Backfill failed: ' + (e.message || e);
+        btn.textContent = 'Run backfill';
+    } finally {
+        btn.disabled = false;
     }
 }
 </script>

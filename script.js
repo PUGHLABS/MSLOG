@@ -77,6 +77,7 @@ async function registerWithEmail(email, password, profileData) {
             phone: profileData.phone || '',
             role: 'member',
             status: 'pending', // Admin must approve
+            notifications: { topics: { calendar: true, videos: true, forum: true } },
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         return { success: true };
@@ -1360,8 +1361,9 @@ async function initNotificationSettings() {
         var prefs = (doc.exists && doc.data().notifications) || {};
 
         function isOn(key) {
-            if (!prefs.topics) return false;
-            return prefs.topics[key] === true;
+            // Opt-out model: missing prefs or missing topic = subscribed
+            if (!prefs.topics) return true;
+            return prefs.topics[key] !== false;
         }
 
         container.innerHTML = NOTIF_TOPICS.map(function(t) {
