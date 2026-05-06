@@ -174,6 +174,8 @@ function initNav() {
             '<button onclick="doLogout()" class="w-full text-xs bg-[#7E8994] hover:bg-[#6b7a85] text-white px-3 py-2 rounded">Logout</button></div>' + mToggle;
         if (dMem) dMem.classList.remove('hidden');
         if (mMem) mMem.classList.remove('hidden');
+        var dPub = document.getElementById('nav-desktop-public');
+        if (dPub) dPub.classList.add('hidden');
 
         // Reveal admin-only links
         if (auth.role === 'admin') {
