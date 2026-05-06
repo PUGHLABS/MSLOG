@@ -177,7 +177,33 @@ html {
 }
 
 /* Admin-only elements hidden until JS reveals them */
-.admin-only { display: none; }
+.admin-only { display: none !important; }
+
+/* ─── Desktop nav hamburger dropdown ─── */
+#desktop-nav-panel {
+    min-width: 200px;
+    top: 100%;
+}
+#desktop-nav-panel .flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+}
+#desktop-nav-panel .flex > * + * { margin-left: 0 !important; }
+#desktop-nav-panel a.nav-link {
+    display: block;
+    padding: 0.5rem 1rem;
+    border-radius: 0;
+    white-space: nowrap;
+}
+#desktop-nav-panel a.nav-link:hover {
+    background-color: rgba(255,255,255,0.08);
+    color: white;
+}
+#desktop-nav-panel #nav-desktop-member:not(.hidden) {
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding-top: 0.25rem;
+    margin-top: 0.25rem;
+}
 
 /* Category filter pills */
 .cat-pill, .vid-pill {

@@ -147,6 +147,37 @@ function initHamburger() {
 
 // ─── Navigation ──────────────────────────────────────────────────
 function initNav() {
+    // ── Desktop hamburger: collapse inline links into dropdown (once per load) ──
+    if (!document.getElementById('desktop-hamburger')) {
+        var pubEl = document.getElementById('nav-desktop-public');
+        if (pubEl) {
+            var linksRow = pubEl.parentElement;
+            var outerWrap = document.createElement('div');
+            outerWrap.style.position = 'relative';
+            linksRow.parentNode.insertBefore(outerWrap, linksRow);
+            var hbtn = document.createElement('button');
+            hbtn.id = 'desktop-hamburger';
+            hbtn.setAttribute('aria-expanded', 'false');
+            hbtn.className = 'flex items-center gap-1.5 text-[#94A1B0] hover:text-white px-2 py-1.5 rounded text-sm transition-colors';
+            hbtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg><span>Menu</span>';
+            var panel = document.createElement('div');
+            panel.id = 'desktop-nav-panel';
+            panel.className = 'hidden absolute left-0 bg-[#052d4a] rounded-b-lg shadow-xl z-50 py-1';
+            outerWrap.appendChild(hbtn);
+            outerWrap.appendChild(panel);
+            panel.appendChild(linksRow);
+            hbtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var nowHidden = panel.classList.toggle('hidden');
+                hbtn.setAttribute('aria-expanded', nowHidden ? 'false' : 'true');
+            });
+            document.addEventListener('click', function() {
+                panel.classList.add('hidden');
+                hbtn.setAttribute('aria-expanded', 'false');
+            });
+        }
+    }
+
     // Highlight current page link
     var page = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.nav-link[href]').forEach(function(a) {
@@ -174,8 +205,6 @@ function initNav() {
             '<button onclick="doLogout()" class="w-full text-xs bg-[#7E8994] hover:bg-[#6b7a85] text-white px-3 py-2 rounded">Logout</button></div>' + mToggle;
         if (dMem) dMem.classList.remove('hidden');
         if (mMem) mMem.classList.remove('hidden');
-        var dPub = document.getElementById('nav-desktop-public');
-        if (dPub) dPub.classList.add('hidden');
 
         // Reveal admin-only links
         if (auth.role === 'admin') {
