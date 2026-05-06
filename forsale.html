@@ -58,7 +58,9 @@
             font-size: 0.8125rem;
             color: #7E8994;
         }
+        .listing-desc { font-size: 0.875rem; line-height: 1.625; color: #374151; }
         html.dark .listing-card { background: #1e293b; border-color: #334155; }
+        html.dark .listing-desc { color: #cbd5e1; }
         html.dark .lot-badge { background: #0f4c75; }
         html.dark .price-tag { color: #F9812A; }
         html.dark .contact-row { color: #94a3b8; }
@@ -259,7 +261,7 @@
                     '</div>' +
                     '<div class="price-tag">' + fmtPrice(listing.price) + '</div>' +
                 '</div>' +
-                '<p class="text-sm text-[#374151] leading-relaxed flex-1">' + listing.description + '</p>' +
+                '<p class="listing-desc flex-1">' + listing.description + '</p>' +
                 '<div class="border-t border-[#e2e8f0] pt-3 mt-auto">' +
                     '<p class="text-sm font-semibold text-[#063559] mb-1">' + listing.contactName + '</p>' +
                     '<div class="flex flex-col gap-1">' +
