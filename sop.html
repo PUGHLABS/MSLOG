@@ -3,15 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gate Code — MSLOG</title>
+    <title>Statement of Purpose — MSLOG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="images/logo1.png">
+    <!-- Lora — serif, document feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Markdown renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
+    <style>
+        /* Scoped to the SOP body so the rest of the site stays on its current font.
+           Change --sop-font here to swap fonts later. */
+        :root { --sop-font: 'Lora', Georgia, 'Times New Roman', serif; }
+        .sop-body { font-family: var(--sop-font); color: #1f2937; line-height: 1.7; }
+        .sop-body h4 { font-size: 1.5rem; font-weight: 700; color: #063559; margin: 0 0 1.25rem; letter-spacing: -0.01em; }
+        .sop-body p { margin: 0 0 1rem; font-size: 1.0625rem; }
+        .sop-body strong { font-weight: 600; color: #063559; }
+        .sop-body em { font-style: italic; }
+        .sop-body strong em, .sop-body em strong { color: #F9812A; font-style: italic; font-weight: 700; }
+        .sop-body ul { list-style: disc; padding-left: 1.5rem; margin: 0 0 1.5rem; }
+        .sop-body li { margin-bottom: 0.75rem; font-size: 1.0625rem; }
+        .sop-body li::marker { color: #94A1B0; }
+        .sop-body hr { border: 0; border-top: 1px solid #e2e8f0; margin: 2rem 0; }
+
+        /* Dark mode — match site convention (navy → sky-300, body → slate-200) */
+        html.dark .sop-body { color: #e2e8f0; }
+        html.dark .sop-body h4,
+        html.dark .sop-body strong { color: #7dd3fc; }
+        html.dark .sop-body strong em,
+        html.dark .sop-body em strong { color: #F9812A; }
+        html.dark .sop-body li::marker { color: #64748b; }
+        html.dark .sop-body hr { border-top-color: #334155; }
+    </style>
 </head>
 <body class="bg-[#f8fafc] min-h-screen flex flex-col">
 
@@ -71,49 +101,12 @@
 </header>
 
 <!-- ─── MAIN ─── -->
-<main class="flex-1 px-4 py-8">
-    <div class="max-w-2xl mx-auto">
-
-        <!-- Header -->
-        <div class="page-header rounded-xl p-6 mb-6">
-            <h1 class="text-white text-2xl font-bold">IEP Chain Gate Code</h1>
-            <p class="text-[#94A1B0] text-sm mt-1">Current access code for the community gate</p>
-        </div>
-
-        <!-- Gate Code Display -->
-        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-8 text-center mb-6">
-            <p class="text-[#7E8994] text-sm uppercase tracking-wide mb-4">Current Gate Code</p>
-            <p id="gate-code-display" class="gate-code-display mb-4 text-[#94A1B0]">····</p>
-            <p id="gate-updated-time" class="text-[#94A1B0] text-xs"></p>
-        </div>
-
-        <!-- Instructions -->
-        <div class="bg-[#f0f9ff] border border-[#bae6fd] rounded-xl p-5 mb-6">
-            <h3 class="font-semibold text-[#0369a1] mb-2">How to Use</h3>
-            <ol class="text-[#0369a1] text-sm space-y-1 list-decimal list-inside">
-                <li>Enter the 4-digit code shown above.</li>
-                <li>Move the chain to the side.</li>
-                <li>When leaving, make sure to wrap the chain around the post.</li>
-                <li>Scramble the lock code when done.</li>
-            </ol>
-            <p class="text-[#7E8994] text-xs mt-3">⚠️ Do not share this code with non-members. The code changes periodically.</p>
-        </div>
-
-        <!-- Admin: Edit gate code (hidden for non-admins) -->
-        <div class="admin-only bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5">
-            <h3 class="font-semibold text-[#063559] mb-3">Update Gate Code <span class="badge badge-admin ml-2">Admin Only</span></h3>
-            <form id="gate-edit-form">
-                <div class="flex gap-3">
-                    <div class="flex-1">
-                        <label for="gate-new-code" class="block text-xs font-medium text-[#063559] mb-1">New 4-Digit Code</label>
-                        <input type="text" id="gate-new-code" name="code" placeholder="e.g. 1234" maxlength="4" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
-                    </div>
-                    <div class="flex items-end">
-                        <button type="submit" class="btn-primary px-5 py-2 rounded-lg font-semibold text-sm">Update</button>
-                    </div>
-                </div>
-            </form>
-            <p id="gate-success" class="hidden text-green-700 text-xs bg-green-50 px-3 py-2 rounded mt-3">Gate code updated successfully.</p>
+<main class="flex-1 px-4 py-10">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-6 sm:p-10">
+            <article id="sop-content" class="sop-body">
+                <p class="text-[#7E8994] text-sm">Loading…</p>
+            </article>
         </div>
     </div>
 </main>
@@ -133,7 +126,20 @@
 </footer>
 
 <script src="script.js"></script>
-<script>document.addEventListener('DOMContentLoaded', async function() { await requireAdmin(); });</script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    var container = document.getElementById('sop-content');
+    try {
+        // no-store so the "living document" reflects edits immediately
+        var res = await fetch('SOP.md', { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var md = await res.text();
+        container.innerHTML = marked.parse(md);
+    } catch (e) {
+        console.error('Failed to load SOP.md:', e);
+        container.innerHTML = '<p class="text-red-600 text-sm">Could not load Statement of Purpose. Please try again later.</p>';
+    }
+});
+</script>
 </body>
 </html>
-
