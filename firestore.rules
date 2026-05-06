@@ -77,6 +77,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // For Sale listings - authenticated users can read, only admin can write
+    match /listings/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
     // Threads (Forum) - authenticated users can read
     // Members can create threads, authors and admins can delete
     match /threads/{docId} {
