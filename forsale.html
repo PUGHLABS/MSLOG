@@ -92,7 +92,7 @@
                         <a href="gatecode.html"   class="nav-link admin-only text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Gate Code</a>
                         <a href="videos.html"     class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Videos</a>
                         <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
-                        <a href="forsale.html"    class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">For Sale</a>
+                        <a href="forsale.html"    class="nav-link admin-only text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">For Sale</a>
                         <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
                     </div>
                 </div>
@@ -118,7 +118,7 @@
                 <a href="gatecode.html"   class="nav-link admin-only block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Gate Code</a>
                 <a href="videos.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Videos</a>
                 <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
-                <a href="forsale.html"    class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">For Sale</a>
+                <a href="forsale.html"    class="nav-link admin-only block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">For Sale</a>
                 <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
             </div>
             <div id="nav-mobile-auth"></div>
@@ -283,7 +283,7 @@
         var isDemo = listing._isDemo;
 
         var controls = '';
-        var canControl = !isDemo && (isAdmin || (currentUser && listing.sellerUid === currentUser.uid));
+        var canControl = !isDemo && isAdmin;
         if (canControl) {
             if (!isSold) {
                 controls += '<button onclick="editListing(\'' + listing.id + '\')" class="text-xs text-[#7E8994] hover:text-[#063559] underline">Edit</button>';
@@ -397,7 +397,7 @@
     };
 
     document.addEventListener('DOMContentLoaded', async function() {
-        await requireAuth();
+        await requireAdmin();
 
         // Detect user and role, pre-fill contact info
         var user = firebase.auth().currentUser;
@@ -407,7 +407,7 @@
             if (memberDoc.exists) {
                 var memberData = memberDoc.data();
                 isAdmin = memberData.role === 'admin';
-                document.getElementById('btn-post-listing').classList.remove('hidden');
+                if (isAdmin) document.getElementById('btn-post-listing').classList.remove('hidden');
                 var nameEl = document.getElementById('listing-contact-name');
                 var phoneEl = document.getElementById('listing-contact-phone');
                 var emailEl = document.getElementById('listing-contact-email');
