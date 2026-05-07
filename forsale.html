@@ -202,6 +202,48 @@
     </div>
 </main>
 
+<!-- ─── EDIT MODAL ─── -->
+<div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
+        <div class="p-5 border-b border-[#e2e8f0] flex justify-between items-center">
+            <h3 class="font-semibold text-[#063559]">Edit Listing</h3>
+            <button id="btn-close-edit" class="text-[#7E8994] hover:text-[#063559] text-2xl leading-none">&times;</button>
+        </div>
+        <form id="edit-form" class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input type="hidden" id="edit-id">
+            <div>
+                <label class="block text-xs font-medium text-[#063559] mb-1">Parcel Number <span class="text-red-500">*</span></label>
+                <input type="text" id="edit-lot" maxlength="10" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm font-mono">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[#063559] mb-1">Asking Price <span class="text-red-500">*</span></label>
+                <input type="text" id="edit-price" inputmode="numeric" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-[#063559] mb-1">Description <span class="text-red-500">*</span></label>
+                <textarea id="edit-desc" rows="3" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm resize-none"></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[#063559] mb-1">Contact Name <span class="text-red-500">*</span></label>
+                <input type="text" id="edit-contact-name" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[#063559] mb-1">Contact Phone</label>
+                <input type="tel" id="edit-contact-phone" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-[#063559] mb-1">Contact Email</label>
+                <input type="email" id="edit-contact-email" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div class="sm:col-span-2 flex items-center gap-3">
+                <button type="submit" class="btn-primary px-5 py-2 rounded-lg font-semibold text-sm">Save Changes</button>
+                <button type="button" id="btn-cancel-edit" class="btn-secondary px-4 py-2 rounded-lg text-sm">Cancel</button>
+                <p id="edit-error" class="hidden text-red-600 text-xs"></p>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- ─── FOOTER ─── -->
 <footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">
     <div class="max-w-6xl mx-auto">
@@ -240,12 +282,14 @@
         var isSold = listing.status === 'sold';
         var isDemo = listing._isDemo;
 
-        var adminControls = '';
-        if (isAdmin && !isDemo) {
+        var controls = '';
+        var canControl = !isDemo && (isAdmin || (currentUser && listing.sellerUid === currentUser.uid));
+        if (canControl) {
             if (!isSold) {
-                adminControls = '<button onclick="markSold(\'' + listing.id + '\')" class="text-xs text-[#7E8994] hover:text-[#063559] underline">Mark Sold</button>';
+                controls += '<button onclick="editListing(\'' + listing.id + '\')" class="text-xs text-[#7E8994] hover:text-[#063559] underline">Edit</button>';
+                controls += '<button onclick="markSold(\'' + listing.id + '\')" class="text-xs text-[#7E8994] hover:text-[#063559] underline ml-3">Mark Sold</button>';
             }
-            adminControls += '<button onclick="deleteListing(\'' + listing.id + '\')" class="text-xs text-red-400 hover:text-red-600 underline ml-3">Delete</button>';
+            controls += '<button onclick="deleteListing(\'' + listing.id + '\')" class="text-xs text-red-400 hover:text-red-600 underline ml-3">Delete</button>';
         }
 
         var demoBanner = isDemo ? '<div class="text-xs text-center bg-amber-50 text-amber-700 py-1 px-3 border-b border-amber-100 font-medium">— Demo listing —</div>' : '';
@@ -271,7 +315,7 @@
                         email +
                     '</div>' +
                     '<p class="text-[#94A1B0] text-xs mt-2">Listed ' + fmtDate(listing.createdAt) + '</p>' +
-                    (adminControls ? '<div class="mt-2 flex items-center gap-1">' + adminControls + '</div>' : '') +
+                    (controls ? '<div class="mt-2 flex items-center gap-1">' + controls + '</div>' : '') +
                 '</div>' +
             '</div>' +
         '</div>';
@@ -338,32 +382,38 @@
         } catch(e) { alert('Error: ' + e.message); }
     };
 
-    document.addEventListener('DOMContentLoaded', async function() {
-        // ── Auth gate: requireAdmin() for now; switch to requireAuth() to open to all members ──
-        await requireAdmin();
+    window.editListing = function(id) {
+        var l = allListings.find(function(x) { return x.id === id; });
+        if (!l) return;
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-lot').value = l.lotNumber || '';
+        document.getElementById('edit-price').value = l.price ? '$' + Number(l.price).toLocaleString('en-US') : '';
+        document.getElementById('edit-desc').value = l.description || '';
+        document.getElementById('edit-contact-name').value = l.contactName || '';
+        document.getElementById('edit-contact-phone').value = l.contactPhone || '';
+        document.getElementById('edit-contact-email').value = l.contactEmail || '';
+        document.getElementById('edit-error').classList.add('hidden');
+        document.getElementById('edit-modal').classList.remove('hidden');
+    };
 
-        // Detect admin
+    document.addEventListener('DOMContentLoaded', async function() {
+        await requireAuth();
+
+        // Detect user and role, pre-fill contact info
         var user = firebase.auth().currentUser;
         if (user) {
             currentUser = user;
             var memberDoc = await db.collection('members').doc(user.uid).get();
-            if (memberDoc.exists && memberDoc.data().role === 'admin') {
-                isAdmin = true;
+            if (memberDoc.exists) {
+                var memberData = memberDoc.data();
+                isAdmin = memberData.role === 'admin';
                 document.getElementById('btn-post-listing').classList.remove('hidden');
-            }
-        }
-
-        // Pre-fill contact from profile
-        if (currentUser) {
-            var memberDoc2 = await db.collection('members').doc(currentUser.uid).get();
-            if (memberDoc2.exists) {
-                var d = memberDoc2.data();
                 var nameEl = document.getElementById('listing-contact-name');
                 var phoneEl = document.getElementById('listing-contact-phone');
                 var emailEl = document.getElementById('listing-contact-email');
-                if (nameEl && d.name) nameEl.value = d.name;
-                if (phoneEl && d.phone) phoneEl.value = d.phone;
-                if (emailEl && d.email) emailEl.value = d.email;
+                if (nameEl && memberData.name) nameEl.value = memberData.name;
+                if (phoneEl && memberData.phone) phoneEl.value = memberData.phone;
+                if (emailEl && memberData.email) emailEl.value = memberData.email;
             }
         }
 
@@ -395,6 +445,60 @@
                 this.value = digits.slice(0,3) + '-' + digits.slice(3);
             } else {
                 this.value = digits;
+            }
+        });
+
+        // ── Edit modal ──
+        function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+        document.getElementById('btn-close-edit').addEventListener('click', closeEditModal);
+        document.getElementById('btn-cancel-edit').addEventListener('click', closeEditModal);
+        document.getElementById('edit-modal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
+
+        document.getElementById('edit-lot').addEventListener('input', function() {
+            var digits = this.value.replace(/[^0-9]/g, '').slice(0, 9);
+            this.value = digits.length > 5 ? digits.slice(0,5) + '.' + digits.slice(5) : digits;
+        });
+        var editPriceEl = document.getElementById('edit-price');
+        editPriceEl.addEventListener('focus', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
+        editPriceEl.addEventListener('blur', function() {
+            var n = parseInt(this.value.replace(/[^0-9]/g, ''), 10);
+            if (!isNaN(n) && n > 0) this.value = '$' + n.toLocaleString('en-US');
+        });
+        document.getElementById('edit-contact-phone').addEventListener('input', function() {
+            var digits = this.value.replace(/\D/g, '').slice(0, 10);
+            if (digits.length >= 7) this.value = digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6);
+            else if (digits.length >= 4) this.value = digits.slice(0,3) + '-' + digits.slice(3);
+            else this.value = digits;
+        });
+
+        document.getElementById('edit-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            var errorEl = document.getElementById('edit-error');
+            errorEl.classList.add('hidden');
+            var id = document.getElementById('edit-id').value;
+            var lot = document.getElementById('edit-lot').value.trim();
+            var price = parseFloat(document.getElementById('edit-price').value.replace(/[^0-9.]/g, ''));
+            var desc = document.getElementById('edit-desc').value.trim();
+            var name = document.getElementById('edit-contact-name').value.trim();
+            var phone = document.getElementById('edit-contact-phone').value.trim();
+            var email = document.getElementById('edit-contact-email').value.trim();
+            if (!lot || !price || !desc || !name) {
+                errorEl.textContent = 'Please fill in all required fields.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            try {
+                await db.collection('listings').doc(id).update({
+                    lotNumber: lot, price: price, description: desc,
+                    contactName: name, contactPhone: phone, contactEmail: email
+                });
+                var l = allListings.find(function(x) { return x.id === id; });
+                if (l) { l.lotNumber = lot; l.price = price; l.description = desc; l.contactName = name; l.contactPhone = phone; l.contactEmail = email; }
+                closeEditModal();
+                renderListings();
+            } catch(err) {
+                errorEl.textContent = 'Error saving: ' + err.message;
+                errorEl.classList.remove('hidden');
             }
         });
 
