@@ -1,6 +1,6 @@
 # !FSD — Functional Specification Document
 
-> **As-Built Specification** | Version 3.0 | February 15, 2026
+> **As-Built Specification** | Version 4.0 | May 8, 2026
 > **Project:** MSLOG — Mount Spokane Land Owners Group Community Website
 > **Status:** As-Built (verified against codebase)
 > **Philosophy:** ==Capture, Curate, Connect, Collaborate, and Create==
@@ -64,13 +64,16 @@ The website includes:
 - Member directory with search/filter
 - Document library with PDF upload and external URL linking
 - Event calendar with month view and event list
-- Discussion forum (thread creation and viewing)
+- Discussion forum (threads, inline replies, edit, thumbs up/down reactions)
+- Community polls (admin create, member vote, live % results, close/delete)
+- For Sale listings (admin-managed, member read)
 - Gate code management (admin update, member read)
 - Video library (YouTube embeds with categories)
 - Weather widget (live data from Open-Meteo API)
 - Public contact form with email forwarding and Discord notifications
 - Admin dashboard with member management and content stats
 - Mobile-responsive design with hamburger navigation
+- S.O.P. page (community standards of practice)
 
 ## 2.2 Development Approach
 
@@ -90,8 +93,7 @@ The following features were in earlier specs but are not implemented:
 - ~~In-app notifications (bell icon, unread count, dismissible)~~
 - ~~Event RSVP (Yes/No/Maybe tracking)~~
 - ~~Recurring events~~
-- ~~Forum replies UI (collection exists in rules but no frontend)~~
-- ~~Forum moderation tools (pin, report, edit posts)~~
+- ~~Forum moderation tools (pin, report)~~
 - ~~Password reset email flow~~
 - ~~Session timeout after inactivity~~
 - ~~Remember Me functionality~~
@@ -100,12 +102,12 @@ The following features were in earlier specs but are not implemented:
 
 - Property database with parcel numbers and ownership
 - Payment processing for annual dues
-- Forum reply threads (backend rules exist, needs frontend)
 - Event RSVP system
 - In-app notification system
 - Integrated mapping with property boundaries
-- Voting and polling system
 - Newsletter email automation
+- Forum thread search/filter
+- Forum pin/report moderation tools
 
 ## 2.5 Assumptions
 
@@ -125,7 +127,9 @@ The following features were in earlier specs but are not implemented:
 | Admin Dashboard | High | Built |
 | Gate Code Management | High | Built |
 | Event Calendar | Medium | Built (no RSVP/recurring) |
-| Discussion Forum | Medium | Partial (threads only, no replies UI) |
+| Discussion Forum | Medium | Built (threads, replies, edit, reactions) |
+| Community Polls | Medium | Built |
+| For Sale Listings | Low | Built |
 | Contact Form | Medium | Built |
 | Videos Library | Medium | Built |
 | Weather Widget | Low | Built |
@@ -142,9 +146,9 @@ The following features were in earlier specs but are not implemented:
 
 - **Framework:** None — vanilla HTML, CSS, JavaScript
 - **Styling:** Tailwind CSS via CDN (`cdn.tailwindcss.com`) + custom `styles.css` (~203 lines)
-- **JavaScript:** Single file `script.js` (~1,283 lines), all client-side logic
+- **JavaScript:** Single file `script.js` (~1,789 lines), all client-side logic
 - **Responsive:** Mobile-first, Tailwind responsive classes, hamburger menu for mobile
-- **Pages:** 11 HTML files (index, login, dashboard, directory, documents, calendar, forum, gatecode, videos, contact, admin)
+- **Pages:** 15 HTML files (index, login, dashboard, directory, documents, calendar, forum, polls, gatecode, videos, forsale, contact, admin, sop, pending)
 
 ## 3.2 Backend
 
@@ -202,8 +206,11 @@ Architecture:
 | `members` | User accounts, profiles, roles, approval status | Per registered user |
 | `documents` | PDF library metadata and download URLs | Admin-managed |
 | `events` | Calendar events with date/time/location | Admin-managed |
-| `threads` | Discussion forum posts (top-level only) | Member-created |
+| `threads` | Discussion forum posts | Member-created |
+| `threads/{id}/replies` | Inline replies to forum threads | Member-created |
+| `polls` | Community polls with options and votes | Admin-created |
 | `videos` | YouTube video library with categories | Admin-managed |
+| `listings` | For Sale listings | Admin-managed |
 | `settings` | System configuration (gate codes) | Single doc: `gatecode` |
 | `announcements` | Homepage announcements | Admin-managed |
 | `contact_messages` | Public contact form submissions | Auto-created |
@@ -213,7 +220,6 @@ Architecture:
 | Collection | Notes |
 |------------|-------|
 | `forum` | Defined in Firestore rules but code uses `threads` instead |
-| `threads/{id}/replies` | Rules exist but no frontend UI renders replies |
 
 ## 4.2 Document Schemas
 
@@ -264,7 +270,32 @@ Architecture:
   body: string,
   authorId: string,       // UID
   authorName: string,     // Display name at time of posting
-  replyCount: number,     // Always 0 (replies not implemented)
+  replyCount: number,     // Incremented on each reply
+  votes: { [uid]: "up" | "down" },  // Reaction map
+  createdAt: Timestamp,
+  editedAt: Timestamp     // Set on edit (optional)
+}
+```
+
+### `threads/{threadId}/replies/{id}`
+```
+{
+  body: string,           // HTML (Quill output, DOMPurify sanitized)
+  authorId: string,
+  authorName: string,
+  createdAt: Timestamp
+}
+```
+
+### `polls/{id}`
+```
+{
+  question: string,
+  options: string[],      // Array of option text labels
+  votes: { [uid]: number }, // uid → option index
+  closed: boolean,        // Locks voting when true
+  authorId: string,
+  authorName: string,
   createdAt: Timestamp
 }
 ```
@@ -440,26 +471,58 @@ Two permission levels enforced in JavaScript:
 
 ---
 
-## 5.5 Discussion Forum — PARTIALLY BUILT
+## 5.5 Discussion Forum — BUILT
 
 ### FR-5.5.1 Forum Threads (`forum.html`)
 
-- Members can create new discussion threads (title + body)
+- Members can create new discussion threads (title + rich text body via Quill editor)
 - All threads displayed in reverse chronological order (newest first)
 - Limited to 50 most recent threads
-- Each thread shows: title, author name, date, reply count, body text
+- Each thread shows: title, author name, date, body text
 - "New" badge shown on threads less than 3 days old
 - Thread authors and admins can delete threads
+- Thread authors and admins can inline-edit title and body
 - New thread form toggles open/closed via button
 - Requires authentication
 
-**Not implemented:** Reply UI (collection defined in Firestore rules but no frontend), moderation tools (pin, report, edit), thread search/filter, notification on replies.
+### FR-5.5.2 Forum Replies
+
+- Each thread has a Reply button that toggles an inline reply panel
+- Existing replies displayed in chronological order with orange left border
+- Reply composer uses Quill rich text editor
+- Replies stored in `threads/{id}/replies` sub-collection
+- `replyCount` field incremented on each reply; shown live in the Reply button
+
+### FR-5.5.3 Forum Reactions
+
+- Each thread has thumbs up 👍 and thumbs down 👎 buttons with live counters
+- Votes stored as a `votes` map (`uid → "up"|"down"`) on the thread document
+- Clicking the same reaction toggles it off; switching flips the vote
+- Active reaction highlighted in green (up) or red (down)
+
+**Not implemented:** Pin/report moderation, thread search/filter, reply notifications.
 
 ---
 
-## 5.6 Gate Code Management — BUILT (Not in Original FSD)
+## 5.6 Community Polls — BUILT
 
-### FR-5.6.1 Gate Code (`gatecode.html`)
+### FR-5.6.1 Polls (`polls.html`)
+
+- Admin can create polls with a question and 2–N options (dynamic add)
+- Members can cast one vote per poll by clicking an option button
+- Before voting: options displayed as navy clickable buttons
+- After voting: live results shown as animated percentage bars; voter's choice highlighted in orange
+- Closed polls show results to all members without allowing new votes
+- Admin can close a poll (locks voting) or delete it permanently
+- Vote data stored as `votes` map (`uid → optionIndex`) on the poll document
+- Vote counts computed client-side from the map; no double-voting possible
+- Requires authentication; poll creation requires admin role
+
+---
+
+## 5.7 Gate Code Management — BUILT (Not in Original FSD)
+
+### FR-5.7.1 Gate Code (`gatecode.html`)
 
 - Displays current 4-digit gate code stored in `settings/gatecode`
 - Shows last updated timestamp
@@ -469,9 +532,9 @@ Two permission levels enforced in JavaScript:
 
 ---
 
-## 5.7 Video Library — BUILT (Not in Original FSD)
+## 5.8 Video Library — BUILT (Not in Original FSD)
 
-### FR-5.7.1 Videos (`videos.html`)
+### FR-5.8.1 Videos (`videos.html`)
 
 - YouTube video gallery with embedded players
 - Four categories with color-coded badges: Tutorial, Event, Community, Safety
@@ -484,9 +547,9 @@ Two permission levels enforced in JavaScript:
 
 ---
 
-## 5.8 Weather Widget — BUILT (Not in Original FSD)
+## 5.9 Weather Widget — BUILT (Not in Original FSD)
 
-### FR-5.8.1 Weather (`index.html`)
+### FR-5.9.1 Weather (`index.html`)
 
 - Live weather data from Open-Meteo API (free, no API key)
 - Location: Mount Spokane, WA (47.9244, -117.1139)
@@ -500,9 +563,9 @@ Two permission levels enforced in JavaScript:
 
 ---
 
-## 5.9 Contact Form — BUILT (Not in Original FSD)
+## 5.10 Contact Form — BUILT (Not in Original FSD)
 
-### FR-5.9.1 Contact Form (`contact.html`)
+### FR-5.10.1 Contact Form (`contact.html`)
 
 - Public form (no authentication required)
 - Fields: name, email, message
@@ -515,9 +578,9 @@ Two permission levels enforced in JavaScript:
 
 ---
 
-## 5.10 Admin Dashboard — BUILT
+## 5.11 Admin Dashboard — BUILT
 
-### FR-5.10.1 Admin Dashboard (`admin.html`)
+### FR-5.11.1 Admin Dashboard (`admin.html`)
 
 - Requires admin role (`requireAdmin()`)
 - Displays stats: total members, pending approvals, document count, forum thread count
@@ -529,19 +592,19 @@ Two permission levels enforced in JavaScript:
 
 ---
 
-## 5.11 Notifications — PARTIALLY BUILT
+## 5.12 Notifications — PARTIALLY BUILT
 
-### FR-5.11.1 Discord Notifications (Server-Side)
+### FR-5.12.1 Discord Notifications (Server-Side)
 
 - New member registration → Discord webhook with name, email, lot
 - New contact form submission → Discord webhook with sender info and message
 
-### FR-5.11.2 Email Notifications (Server-Side)
+### FR-5.12.2 Email Notifications (Server-Side)
 
 - Member approved → Welcome email via Resend with feature list and login link
 - Contact form → Forwarded to admin email via Resend
 
-### FR-5.11.3 Email Configuration
+### FR-5.12.3 Email Configuration
 
 - From address: `noreply@mtspokanelandgroup.org`
 - Admin email: `pughlabs@gmail.com`
@@ -552,9 +615,9 @@ Two permission levels enforced in JavaScript:
 
 ---
 
-## 5.12 Homepage — BUILT
+## 5.13 Homepage — BUILT
 
-### FR-5.12.1 Landing Page (`index.html`)
+### FR-5.13.1 Landing Page (`index.html`)
 
 - Hero section with group name and tagline
 - Dynamic CTA: "Register" for guests, "Go to Dashboard" for logged-in members
@@ -608,13 +671,15 @@ Two permission levels enforced in JavaScript:
 
 **As a member**, I want to participate in forum discussions.
 
-**Status:** PARTIALLY BUILT
+**Status:** BUILT
 
 **Acceptance Criteria:**
 - [x] I can create new discussion threads
 - [x] I can view all threads with author and date
 - [x] I can delete my own threads
-- [ ] ~~I can reply to existing threads~~ — Not implemented
+- [x] I can edit my own threads inline
+- [x] I can reply to existing threads
+- [x] I can react to threads with thumbs up or thumbs down
 - [ ] ~~I receive notifications when someone replies~~ — Not implemented
 
 ## 6.5 Member — Gate Code Access
@@ -788,7 +853,7 @@ Collections with proper admin enforcement: `documents`, `events`, `videos`, `ann
 
 ### NFR-7.6.1 Code Structure
 
-- All frontend JavaScript in single file (`script.js`, ~1,283 lines)
+- All frontend JavaScript in single file (`script.js`, ~1,789 lines)
 - Functions organized by feature with comment section headers
 - Consistent naming: `init*()` for page initialization, `load*()` for data fetching, `render*()` for DOM rendering
 - `escapeHtml()` utility used for XSS prevention in dynamic content
@@ -818,11 +883,15 @@ Root (served by hosting):
 ├── directory.html      Member directory
 ├── documents.html      Document library
 ├── calendar.html       Event calendar
-├── forum.html          Discussion forum
+├── forum.html          Discussion forum (threads, replies, reactions, edit)
+├── polls.html          Community polls
 ├── gatecode.html       Gate code display
 ├── videos.html         Video library
+├── forsale.html        For Sale listings
 ├── contact.html        Public contact form
 ├── admin.html          Admin dashboard
+├── sop.html            Standards of Practice
+├── pending.html        Pending approval holding page
 ├── script.js           All frontend logic
 ├── styles.css          Custom styles
 ├── firebase-config.js  Firebase initialization
@@ -869,7 +938,8 @@ functions/
 | Payment processing | Stripe/PayPal integration | Not built | Descoped for MVP |
 | Event RSVP | Yes/No/Maybe tracking | Not built | Descoped |
 | Recurring events | Admin-configurable recurrence | Not built | Descoped |
-| Forum replies | Threaded replies with moderation | Threads only (no reply UI) | Partial implementation |
+| Forum replies | Threaded replies with moderation | Inline replies, edit, thumbs up/down reactions | Full reply UI built in v4.0 |
+| Polls | Not in original spec | Admin-created polls with live % results | Community voting need identified |
 | Password reset | Email-based reset flow | Not built | Firebase Auth supports it, no UI created |
 | Gate code feature | Not in original spec | Fully built | Critical member need discovered during build |
 | Video library | Not in original spec | Fully built | Community content sharing need |
@@ -907,3 +977,4 @@ functions/
 | 1.0 | January 30, 2026 | Jeff | Initial draft (5 separate FSDs) |
 | 2.0 | February 12, 2026 | Jeff + Claude | Consolidated to single !FSD with as-built reconciliation |
 | 3.0 | February 15, 2026 | Jeff + Claude | Full as-built verification against codebase; all sections updated to reflect actual implementation |
+| 4.0 | May 8, 2026 | Jeff + Claude | Forum replies/edit/reactions, Polls page, For Sale, SOP, nav updates, Firestore rules for polls, UI polish (weather dish shadow, hero photo, hamburger styling) |

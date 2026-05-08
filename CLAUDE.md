@@ -24,7 +24,7 @@ Mount Spokane Land Owners Group community portal. Vanilla HTML/JS/CSS + Firebase
 
 | File | Purpose |
 |---|---|
-| `script.js` | All client-side logic (~1300 lines) |
+| `script.js` | All client-side logic (~1800 lines) |
 | `styles.css` | Custom styles beyond Tailwind |
 | `firebase-config.js` | Firebase app init (safe to be public) |
 | `firestore.rules` | Firestore security rules |
@@ -33,7 +33,7 @@ Mount Spokane Land Owners Group community portal. Vanilla HTML/JS/CSS + Firebase
 | `netlify.toml` | Netlify hosting + cache config |
 | `!FSD.md` | Full functional specification (source of truth) |
 
-Pages: `index.html`, `login.html`, `dashboard.html`, `directory.html`, `documents.html`, `calendar.html`, `forum.html`, `gatecode.html`, `videos.html`, `contact.html`, `admin.html`
+Pages: `index.html`, `login.html`, `dashboard.html`, `directory.html`, `documents.html`, `calendar.html`, `forum.html`, `polls.html`, `gatecode.html`, `videos.html`, `forsale.html`, `contact.html`, `admin.html`, `sop.html`, `pending.html`
 
 ---
 
