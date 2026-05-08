@@ -83,6 +83,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Polls - authenticated users can read and vote, only admin can create/delete/close
+    match /polls/{pollId} {
+      allow read: if isAuth();
+      allow create: if isAdmin();
+      allow update: if isAuth();  // members update votes map; admins close polls
+      allow delete: if isAdmin();
+    }
+
     // Threads (Forum) - authenticated users can read
     // Members can create threads, authors and admins can delete
     match /threads/{docId} {

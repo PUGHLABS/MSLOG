@@ -158,8 +158,8 @@ function initNav() {
             var hbtn = document.createElement('button');
             hbtn.id = 'desktop-hamburger';
             hbtn.setAttribute('aria-expanded', 'false');
-            hbtn.className = 'flex items-center gap-1.5 text-[#94A1B0] hover:text-white px-2 py-1.5 rounded text-sm transition-colors';
-            hbtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg><span>Menu</span>';
+            hbtn.className = 'flex items-center gap-1.5 text-[#F9812A] hover:text-white px-2.5 py-1.5 rounded-lg border border-[#F9812A] border-opacity-50 hover:border-white text-sm font-medium transition-colors';
+            hbtn.innerHTML = '<svg class="w-[26px] h-[26px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg><span>Menu</span>';
             var panel = document.createElement('div');
             panel.id = 'desktop-nav-panel';
             panel.className = 'hidden absolute left-0 bg-[#052d4a] rounded-b-lg shadow-xl z-50 py-1';
@@ -1166,21 +1166,42 @@ function isNewThread(createdAt) {
 function renderThreadItem(doc, isAdmin, currentUserId) {
     var data = doc.data();
     var dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Unknown';
+    var canEdit   = isAdmin || (currentUserId && data.authorId === currentUserId);
     var canDelete = isAdmin || (currentUserId && data.authorId === currentUserId);
     var isNew = isNewThread(data.createdAt);
 
-    var deleteBtn = canDelete ?
-        '<button onclick="deleteThread(\'' + doc.id + '\')" class="text-red-500 hover:text-red-700 text-xs font-semibold ml-2">Delete</button>' : '';
+    // Reactions
+    var votes = data.votes || {};
+    var upCount   = Object.values(votes).filter(function(v) { return v === 'up'; }).length;
+    var downCount = Object.values(votes).filter(function(v) { return v === 'down'; }).length;
+    var myVote    = currentUserId ? (votes[currentUserId] || '') : '';
+    var upCls     = myVote === 'up'   ? 'text-green-600 font-bold' : 'text-[#94A1B0] hover:text-green-600';
+    var downCls   = myVote === 'down' ? 'text-red-500 font-bold'   : 'text-[#94A1B0] hover:text-red-500';
 
-    var newBadge = isNew ? '<span class="badge badge-new">New</span>' : '';
+    var editBtn   = canEdit   ? '<button onclick="startEditThread(\'' + doc.id + '\')" class="text-[#94A1B0] hover:text-[#063559] text-xs transition-colors">Edit</button>' : '';
+    var deleteBtn = canDelete ? '<button onclick="deleteThread(\'' + doc.id + '\')" class="text-red-400 hover:text-red-600 text-xs transition-colors">Delete</button>' : '';
+    var newBadge  = isNew ? '<span class="badge badge-new">New</span>' : '';
+
+    var actionBar =
+        '<div class="flex items-center gap-3 mt-3 pt-2 border-t border-[#f1f5f9]">' +
+        '<button onclick="toggleVote(\'' + doc.id + '\',\'up\')" class="flex items-center gap-1 text-xs ' + upCls + ' transition-colors">👍 <span id="up-' + doc.id + '">' + upCount + '</span></button>' +
+        '<button onclick="toggleVote(\'' + doc.id + '\',\'down\')" class="flex items-center gap-1 text-xs ' + downCls + ' transition-colors">👎 <span id="dn-' + doc.id + '">' + downCount + '</span></button>' +
+        '<span class="flex-1"></span>' +
+        '<button onclick="toggleReplyPanel(\'' + doc.id + '\')" class="text-xs text-[#94A1B0] hover:text-[#063559] transition-colors">💬 Reply (<span id="rc-' + doc.id + '">' + (data.replyCount || 0) + '</span>)</button>' +
+        (editBtn   ? '<span class="text-[#e2e8f0]">|</span>' + editBtn   : '') +
+        (deleteBtn ? '<span class="text-[#e2e8f0]">|</span>' + deleteBtn : '') +
+        '</div>';
 
     return '<div class="thread-card bg-white rounded-lg p-4 shadow-sm" data-id="' + doc.id + '">' +
         '<div class="flex justify-between items-start">' +
-        '<h4 class="font-semibold text-[#063559]">' + escapeHtml(data.title) + '</h4>' +
+        '<h4 class="font-semibold text-[#063559]" id="ttl-' + doc.id + '">' + escapeHtml(data.title) + '</h4>' +
         newBadge +
         '</div>' +
-        '<p class="text-[#7E8994] text-xs mt-1">Posted by ' + escapeHtml(data.authorName || 'Unknown') + ' &mdash; ' + dateStr + ' &middot; ' + (data.replyCount || 0) + ' replies' + deleteBtn + '</p>' +
-        (data.body ? '<div class="forum-body mt-2 text-sm text-[#64748b]">' + sanitizeHtml(data.body) + '</div>' : '') +
+        '<p class="text-[#7E8994] text-xs mt-1">Posted by ' + escapeHtml(data.authorName || 'Unknown') + ' &mdash; ' + dateStr + '</p>' +
+        '<div class="forum-body mt-2 text-sm text-[#64748b]" id="bdy-' + doc.id + '">' + (data.body ? sanitizeHtml(data.body) : '') + '</div>' +
+        actionBar +
+        '<div id="edit-panel-' + doc.id + '" class="hidden mt-3"></div>' +
+        '<div id="reply-panel-' + doc.id + '" class="hidden mt-3 border-t border-[#f1f5f9] pt-3"></div>' +
         '</div>';
 }
 
@@ -1237,6 +1258,159 @@ async function deleteThread(threadId) {
     } catch (e) {
         console.error('Error deleting thread:', e);
         alert('Failed to delete thread. Please try again.');
+    }
+}
+
+// ─── Reactions (thumbs up / down) ───────────────────────────────
+async function toggleVote(threadId, type) {
+    if (!currentUser) return;
+    var uid = currentUser.uid;
+    try {
+        var ref = db.collection('threads').doc(threadId);
+        var snap = await ref.get();
+        var votes = snap.data().votes || {};
+        if (votes[uid] === type) { delete votes[uid]; } else { votes[uid] = type; }
+        await ref.update({ votes: votes });
+        var upCount   = Object.values(votes).filter(function(v) { return v === 'up'; }).length;
+        var downCount = Object.values(votes).filter(function(v) { return v === 'down'; }).length;
+        var upEl = document.getElementById('up-' + threadId);
+        var dnEl = document.getElementById('dn-' + threadId);
+        if (upEl) upEl.textContent = upCount;
+        if (dnEl) dnEl.textContent = downCount;
+    } catch(e) { console.error('Vote error:', e); }
+}
+
+// ─── Replies ────────────────────────────────────────────────────
+async function toggleReplyPanel(threadId) {
+    var panel = document.getElementById('reply-panel-' + threadId);
+    if (!panel) return;
+    if (!panel.classList.contains('hidden')) {
+        panel.classList.add('hidden');
+        panel.innerHTML = '';
+        delete window['replyQuill_' + threadId];
+        return;
+    }
+    panel.classList.remove('hidden');
+    panel.innerHTML = '<p class="text-xs text-[#94A1B0]">Loading…</p>';
+    await loadReplies(threadId);
+}
+
+async function loadReplies(threadId) {
+    var panel = document.getElementById('reply-panel-' + threadId);
+    if (!panel) return;
+    try {
+        var snap = await db.collection('threads').doc(threadId).collection('replies').orderBy('createdAt', 'asc').get();
+        var html = '<div class="space-y-2 mb-3">';
+        if (snap.empty) {
+            html += '<p class="text-xs text-[#94A1B0]">No replies yet — be the first!</p>';
+        } else {
+            snap.forEach(function(d) {
+                var rd = d.data();
+                var ds = rd.createdAt ? rd.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                html += '<div class="bg-[#f8fafc] rounded-lg p-3 border-l-2 border-[#F9812A]">' +
+                    '<p class="text-xs text-[#94A1B0] mb-1 font-medium">' + escapeHtml(rd.authorName || 'Unknown') + ' &mdash; ' + ds + '</p>' +
+                    '<div class="forum-body text-sm text-[#334155]">' + sanitizeHtml(rd.body || '') + '</div>' +
+                    '</div>';
+            });
+        }
+        html += '</div>' +
+            '<div id="rqe-' + threadId + '" class="forum-editor"></div>' +
+            '<div class="flex gap-2 mt-2">' +
+            '<button onclick="submitReply(\'' + threadId + '\')" class="btn-primary px-3 py-1 rounded-lg text-xs font-semibold">Post Reply</button>' +
+            '<button onclick="toggleReplyPanel(\'' + threadId + '\')" class="btn-secondary px-3 py-1 rounded-lg text-xs">Cancel</button>' +
+            '</div>';
+        panel.innerHTML = html;
+        if (typeof Quill !== 'undefined') {
+            window['replyQuill_' + threadId] = new Quill('#rqe-' + threadId, {
+                theme: 'snow',
+                modules: { toolbar: [['bold', 'italic'], ['clean']] },
+                placeholder: 'Write a reply…'
+            });
+        }
+    } catch(e) {
+        panel.innerHTML = '<p class="text-xs text-red-500">Error loading replies.</p>';
+    }
+}
+
+async function submitReply(threadId) {
+    var quill = window['replyQuill_' + threadId];
+    if (!quill || quill.getLength() <= 1) return;
+    var body = quill.root.innerHTML;
+    var auth = getAuth();
+    try {
+        await db.collection('threads').doc(threadId).collection('replies').add({
+            body: body,
+            authorId: currentUser ? currentUser.uid : null,
+            authorName: auth ? auth.name : 'Anonymous',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        await db.collection('threads').doc(threadId).update({
+            replyCount: firebase.firestore.FieldValue.increment(1)
+        });
+        var rcEl = document.getElementById('rc-' + threadId);
+        if (rcEl) rcEl.textContent = parseInt(rcEl.textContent || '0') + 1;
+        delete window['replyQuill_' + threadId];
+        await loadReplies(threadId);
+    } catch(e) {
+        console.error('Reply error:', e);
+        alert('Failed to post reply.');
+    }
+}
+
+// ─── Edit thread ────────────────────────────────────────────────
+function startEditThread(threadId) {
+    var panel = document.getElementById('edit-panel-' + threadId);
+    if (!panel) return;
+    var titleEl = document.getElementById('ttl-' + threadId);
+    var bodyEl  = document.getElementById('bdy-' + threadId);
+    panel.innerHTML =
+        '<input type="text" id="etl-' + threadId + '" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-1.5 text-sm mb-2" placeholder="Title">' +
+        '<div id="ebe-' + threadId + '" class="forum-editor mb-2"></div>' +
+        '<div class="flex gap-2">' +
+        '<button onclick="saveThreadEdit(\'' + threadId + '\')" class="btn-primary px-3 py-1 rounded-lg text-xs font-semibold">Save</button>' +
+        '<button onclick="cancelEditThread(\'' + threadId + '\')" class="btn-secondary px-3 py-1 rounded-lg text-xs">Cancel</button>' +
+        '</div>';
+    panel.classList.remove('hidden');
+    var inp = document.getElementById('etl-' + threadId);
+    if (inp && titleEl) inp.value = titleEl.textContent;
+    if (typeof Quill !== 'undefined') {
+        var q = new Quill('#ebe-' + threadId, {
+            theme: 'snow',
+            modules: { toolbar: [['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']] },
+            placeholder: 'Edit your message…'
+        });
+        if (bodyEl) q.root.innerHTML = bodyEl.innerHTML;
+        window['editQuill_' + threadId] = q;
+    }
+}
+
+function cancelEditThread(threadId) {
+    var panel = document.getElementById('edit-panel-' + threadId);
+    if (panel) { panel.classList.add('hidden'); panel.innerHTML = ''; }
+    delete window['editQuill_' + threadId];
+}
+
+async function saveThreadEdit(threadId) {
+    var inp   = document.getElementById('etl-' + threadId);
+    var quill = window['editQuill_' + threadId];
+    if (!inp) return;
+    var newTitle = inp.value.trim();
+    if (!newTitle) return;
+    var newBody = quill ? (quill.getLength() > 1 ? quill.root.innerHTML : '') : '';
+    try {
+        await db.collection('threads').doc(threadId).update({
+            title: newTitle,
+            body: newBody,
+            editedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        var titleEl = document.getElementById('ttl-' + threadId);
+        var bodyEl  = document.getElementById('bdy-' + threadId);
+        if (titleEl) titleEl.textContent = newTitle;
+        if (bodyEl)  bodyEl.innerHTML = sanitizeHtml(newBody);
+        cancelEditThread(threadId);
+    } catch(e) {
+        console.error('Edit error:', e);
+        alert('Failed to save changes.');
     }
 }
 
@@ -1297,6 +1471,169 @@ function initForum() {
 
         btn.disabled = false;
         btn.textContent = 'Post';
+    });
+}
+
+// ─── Polls ───────────────────────────────────────────────────────
+function renderPollItem(doc, isAdmin, currentUserId) {
+    var data  = doc.data();
+    var votes = data.votes || {};
+    var myVote = currentUserId ? votes[currentUserId] : null;
+    var hasVoted = myVote !== undefined && myVote !== null;
+    var options = data.options || [];
+    var totalVotes = Object.keys(votes).length;
+    var dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+    var closed = data.closed || false;
+    var showResults = hasVoted || closed;
+
+    var optionsHtml = '';
+    options.forEach(function(opt, i) {
+        var count = Object.values(votes).filter(function(v) { return v === i; }).length;
+        var pct   = totalVotes > 0 ? Math.round(count / totalVotes * 100) : 0;
+        var isMyChoice = hasVoted && myVote === i;
+        if (showResults) {
+            optionsHtml +=
+                '<div class="mb-2">' +
+                '<div class="flex justify-between text-xs mb-0.5">' +
+                '<span class="font-medium text-[#063559]' + (isMyChoice ? ' text-[#F9812A]' : '') + '">' +
+                (isMyChoice ? '✓ ' : '') + escapeHtml(opt) + '</span>' +
+                '<span class="text-[#7E8994]">' + count + ' vote' + (count !== 1 ? 's' : '') + ' · ' + pct + '%</span>' +
+                '</div>' +
+                '<div class="h-2 rounded-full bg-[#e2e8f0] overflow-hidden">' +
+                '<div class="h-2 rounded-full transition-all duration-500' + (isMyChoice ? ' bg-[#F9812A]' : ' bg-[#063559]') + '" style="width:' + pct + '%"></div>' +
+                '</div></div>';
+        } else {
+            optionsHtml +=
+                '<button onclick="castVote(\'' + doc.id + '\',' + i + ')" ' +
+                'class="w-full text-left px-4 py-2.5 rounded-lg border border-[#063559] bg-[#063559] hover:bg-[#0a4a7a] hover:border-[#F9812A] text-sm text-white transition-colors mb-2 font-medium">' +
+                escapeHtml(opt) + '</button>';
+        }
+    });
+
+    var statusBadge = closed
+        ? '<span class="badge badge-pending ml-2">Closed</span>'
+        : '<span class="badge badge-new ml-2">Open</span>';
+
+    var adminBtns = isAdmin
+        ? '<span class="text-[#e2e8f0]">|</span>' +
+          (!closed ? '<button onclick="closePoll(\'' + doc.id + '\')" class="text-xs text-[#94A1B0] hover:text-[#063559] transition-colors">Close</button><span class="text-[#e2e8f0]">|</span>' : '') +
+          '<button onclick="deletePoll(\'' + doc.id + '\')" class="text-xs text-red-400 hover:text-red-600 transition-colors">Delete</button>'
+        : '';
+
+    return '<div class="bg-white rounded-lg p-5 shadow-sm border-l-4 border-[#F9812A]" data-poll-id="' + doc.id + '">' +
+        '<div class="flex items-start justify-between mb-1">' +
+        '<h4 class="font-semibold text-[#063559] text-base">' + escapeHtml(data.question) + '</h4>' +
+        statusBadge +
+        '</div>' +
+        '<p class="text-[#94A1B0] text-xs mb-4">By ' + escapeHtml(data.authorName || 'Admin') + ' &mdash; ' + dateStr +
+        ' &middot; ' + totalVotes + ' vote' + (totalVotes !== 1 ? 's' : '') + '</p>' +
+        '<div id="poll-opts-' + doc.id + '">' + optionsHtml + '</div>' +
+        (showResults && !closed ? '<p class="text-xs text-[#94A1B0] mt-2">You voted. Results are live.</p>' : '') +
+        '<div class="flex items-center gap-3 mt-3 pt-2 border-t border-[#f1f5f9]">' +
+        '<span class="flex-1"></span>' + adminBtns +
+        '</div>' +
+        '</div>';
+}
+
+async function loadPolls() {
+    var list = document.getElementById('poll-list');
+    if (!list) return;
+    try {
+        var snap = await db.collection('polls').orderBy('createdAt', 'desc').limit(30).get();
+        var admin  = isAdmin();
+        var userId = currentUser ? currentUser.uid : null;
+        if (snap.empty) {
+            list.innerHTML = '<div class="text-center py-8 text-[#94A1B0]">No polls yet.</div>';
+            return;
+        }
+        var html = '';
+        snap.forEach(function(doc) { html += renderPollItem(doc, admin, userId); });
+        list.innerHTML = html;
+    } catch(e) {
+        console.error('Load polls error:', e);
+        list.innerHTML = '<div class="text-center py-8 text-red-500">Error loading polls. Please refresh.</div>';
+    }
+}
+
+async function castVote(pollId, optionIndex) {
+    if (!currentUser) return;
+    try {
+        var ref = db.collection('polls').doc(pollId);
+        var snap = await ref.get();
+        var votes = snap.data().votes || {};
+        votes[currentUser.uid] = optionIndex;
+        await ref.update({ votes: votes });
+        var newSnap = await ref.get();
+        var admin  = isAdmin();
+        var card   = document.querySelector('[data-poll-id="' + pollId + '"]');
+        if (card) card.outerHTML = renderPollItem(newSnap, admin, currentUser.uid);
+    } catch(e) {
+        console.error('Vote error:', e);
+        alert('Failed to cast vote.');
+    }
+}
+
+async function closePoll(pollId) {
+    if (!confirm('Close this poll? Members will no longer be able to vote.')) return;
+    try {
+        await db.collection('polls').doc(pollId).update({ closed: true });
+        loadPolls();
+    } catch(e) { alert('Failed to close poll.'); }
+}
+
+async function deletePoll(pollId) {
+    if (!confirm('Delete this poll permanently?')) return;
+    try {
+        await db.collection('polls').doc(pollId).delete();
+        var card = document.querySelector('[data-poll-id="' + pollId + '"]');
+        if (card) card.remove();
+    } catch(e) { alert('Failed to delete poll.'); }
+}
+
+function addPollOption() {
+    var list = document.getElementById('poll-options-list');
+    var count = list.querySelectorAll('.poll-option').length + 1;
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'poll-option form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm';
+    inp.placeholder = 'Option ' + count;
+    list.appendChild(inp);
+}
+
+function initPolls() {
+    loadPolls();
+    var form = document.getElementById('new-poll-form');
+    if (!form) return;
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var question = document.getElementById('poll-question').value.trim();
+        var optEls   = document.querySelectorAll('.poll-option');
+        var options  = Array.from(optEls).map(function(el) { return el.value.trim(); }).filter(Boolean);
+        var errEl    = document.getElementById('poll-error');
+        if (!question || options.length < 2) {
+            if (errEl) { errEl.textContent = 'Enter a question and at least 2 options.'; errEl.classList.remove('hidden'); }
+            return;
+        }
+        if (errEl) errEl.classList.add('hidden');
+        var auth = getAuth();
+        try {
+            await db.collection('polls').add({
+                question:   question,
+                options:    options,
+                votes:      {},
+                closed:     false,
+                authorId:   currentUser ? currentUser.uid : null,
+                authorName: auth ? auth.name : 'Admin',
+                createdAt:  firebase.firestore.FieldValue.serverTimestamp()
+            });
+            form.reset();
+            document.querySelectorAll('.poll-option').forEach(function(el, i) { if (i >= 2) el.remove(); });
+            document.getElementById('new-poll-panel').classList.add('hidden');
+            loadPolls();
+        } catch(e) {
+            console.error('Create poll error:', e);
+            if (errEl) { errEl.textContent = 'Failed to create poll.'; errEl.classList.remove('hidden'); }
+        }
     });
 }
 
