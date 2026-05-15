@@ -1715,9 +1715,12 @@ function trackPageView() {
 
 // ─── Notification Preferences ────────────────────────────────────
 var NOTIF_TOPICS = [
-    { key: 'calendar', label: 'Calendar',  icon: '📅' },
-    { key: 'videos',   label: 'Videos',    icon: '🎥' },
-    { key: 'forum',    label: 'Forum',     icon: '💬' }
+    { key: 'calendar',  label: 'Calendar',  icon: '📅' },
+    { key: 'videos',    label: 'Videos',    icon: '🎥' },
+    { key: 'forum',     label: 'Forum',     icon: '💬' },
+    { key: 'documents', label: 'Documents', icon: '📄', adminOnly: true },
+    { key: 'polls',     label: 'Polls',     icon: '📊', adminOnly: true },
+    { key: 'forsale',   label: 'For Sale',  icon: '🏷️', adminOnly: true }
 ];
 
 async function initNotificationSettings() {
@@ -1734,10 +1737,14 @@ async function initNotificationSettings() {
             return prefs.topics[key] !== false;
         }
 
-        container.innerHTML = NOTIF_TOPICS.map(function(t) {
+        var admin = isAdmin();
+        var visibleTopics = NOTIF_TOPICS.filter(function(t) { return !t.adminOnly || admin; });
+
+        container.innerHTML = visibleTopics.map(function(t) {
+            var adminBadge = t.adminOnly ? ' <span class="text-[10px] font-semibold uppercase tracking-wide bg-[#063559] text-white px-1.5 py-0.5 rounded">Admin</span>' : '';
             return '<label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-[#f0f4f8] transition-colors">' +
                 '<input type="checkbox" class="notif-cb w-4 h-4 accent-[#F9812A]" data-topic="' + t.key + '"' + (isOn(t.key) ? ' checked' : '') + '>' +
-                '<span class="text-sm text-[#334155]">' + t.icon + ' ' + t.label + '</span>' +
+                '<span class="text-sm text-[#334155]">' + t.icon + ' ' + t.label + adminBadge + '</span>' +
                 '</label>';
         }).join('');
 

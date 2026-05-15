@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polls — MSLOG</title>
+    <title>Live Weather Cam — MSLOG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="images/logo1.png">
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -28,7 +29,7 @@
                     <div id="nav-desktop-public" class="flex items-center space-x-1">
                         <a href="index.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Home</a>
                         <a href="sop.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">S.O.P.</a>
-                        <a href="contact.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Contact</a>
+                        <a href="contact.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors" title="Administrator Jeff Pugh">Contact</a>
                     </div>
                     <div id="nav-desktop-member" class="hidden flex items-center space-x-1">
                         <a href="dashboard.html"  class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Dashboard</a>
@@ -40,14 +41,14 @@
                         <a href="forum.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Forum</a>
                         <a href="polls.html"      class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Polls</a>
                         <a href="forsale.html"    class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">For Sale</a>
-                        <a href="weathercam.html" class="nav-link text-[#94A1B0] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Weather Cam</a>
+                        <a href="weathercam.html" class="nav-link text-white px-3 py-1.5 rounded text-sm transition-colors">Weather Cam</a>
                         <a href="admin.html"      class="nav-link admin-only text-[#F9812A] hover:text-white px-3 py-1.5 rounded text-sm transition-colors">Admin</a>
                     </div>
                 </div>
                 <div id="nav-desktop-auth" class="ml-4 flex items-center"></div>
             </div>
-            <button id="hamburger" class="md:hidden text-[#F9812A] p-1.5 rounded-lg border border-[#F9812A] border-opacity-50 hover:bg-[#F9812A] hover:bg-opacity-10 transition-colors" aria-label="Toggle menu" aria-expanded="false">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <button id="hamburger" class="md:hidden text-white p-1" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
             </button>
@@ -55,9 +56,9 @@
     </div>
     <div id="mobile-menu" class="md:hidden">
         <div class="px-4 pt-2 pb-3 bg-[#052d4a]">
-            <a href="index.html"   class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
-            <a href="sop.html"     class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">S.O.P.</a>
-            <a href="contact.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Contact</a>
+            <a href="index.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Home</a>
+            <a href="sop.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">S.O.P.</a>
+            <a href="contact.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm" title="Administrator Jeff Pugh">Contact</a>
             <div id="nav-mobile-member" class="hidden">
                 <a href="dashboard.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Dashboard</a>
                 <a href="directory.html"  class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Directory</a>
@@ -68,7 +69,7 @@
                 <a href="forum.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Forum</a>
                 <a href="polls.html"      class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Polls</a>
                 <a href="forsale.html"    class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">For Sale</a>
-                <a href="weathercam.html" class="nav-link block text-[#94A1B0] hover:text-white px-3 py-2 rounded text-sm">Weather Cam</a>
+                <a href="weathercam.html" class="nav-link block text-white px-3 py-2 rounded text-sm">Weather Cam</a>
                 <a href="admin.html"      class="nav-link admin-only block text-[#F9812A] hover:text-white px-3 py-2 rounded text-sm">Admin</a>
             </div>
             <div id="nav-mobile-auth"></div>
@@ -79,44 +80,22 @@
 
 <!-- ─── MAIN ─── -->
 <main class="flex-1 px-4 py-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-6xl mx-auto">
 
-        <!-- Header -->
-        <div class="page-header rounded-xl p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-                <h1 class="text-white text-2xl font-bold">Community Polls</h1>
-                <p class="text-[#94A1B0] text-sm mt-1">Vote on community questions and see results</p>
-            </div>
-            <button id="new-poll-btn" onclick="document.getElementById('new-poll-panel').classList.toggle('hidden')" class="btn-primary px-4 py-2 rounded-lg font-semibold text-sm self-start sm:self-auto admin-only">+ New Poll</button>
+        <!-- Page Header -->
+        <div class="page-header rounded-xl p-6 mb-6">
+            <h1 class="text-white text-2xl font-bold">Live Weather Cam</h1>
+            <p class="text-[#94A1B0] text-sm mt-1">Brickel Creek microclimate data &amp; webcam</p>
         </div>
 
-        <!-- New Poll Form (admin only, toggle) -->
-        <div id="new-poll-panel" class="hidden bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-5 mb-5 admin-only">
-            <h3 class="font-semibold text-[#063559] mb-3">Create a New Poll</h3>
-            <form id="new-poll-form">
-                <div class="mb-3">
-                    <label for="poll-question" class="block text-xs font-medium text-[#063559] mb-1">Question</label>
-                    <input type="text" id="poll-question" placeholder="What should we vote on?" required
-                        class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
-                </div>
-                <div id="poll-options-list" class="mb-3 space-y-2">
-                    <label class="block text-xs font-medium text-[#063559] mb-1">Options</label>
-                    <input type="text" class="poll-option form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="Option 1">
-                    <input type="text" class="poll-option form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="Option 2">
-                </div>
-                <button type="button" onclick="addPollOption()" class="text-xs text-[#F9812A] hover:underline mb-3">+ Add another option</button>
-                <div class="flex items-center gap-2">
-                    <button type="submit" class="btn-primary px-4 py-1.5 rounded-lg font-semibold text-sm">Create Poll</button>
-                    <button type="button" onclick="document.getElementById('new-poll-panel').classList.add('hidden')" class="btn-secondary px-4 py-1.5 rounded-lg text-sm">Cancel</button>
-                    <p id="poll-error" class="hidden text-red-600 text-xs"></p>
-                </div>
-            </form>
+        <!-- Coming Soon Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] flex flex-col items-center justify-center py-24 px-6 text-center">
+            <div class="text-7xl mb-8">🌤️📷</div>
+            <p class="text-3xl md:text-5xl font-bold text-[#063559] leading-tight max-w-3xl">
+                Our local Brickel Creek microclimate data and webcam — Coming Soon!
+            </p>
         </div>
 
-        <!-- Poll List -->
-        <div id="poll-list" class="space-y-4">
-            <div class="text-center py-8 text-[#94A1B0]">Loading polls...</div>
-        </div>
     </div>
 </main>
 
@@ -136,10 +115,9 @@
 
 <script src="script.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', async function() {
-    await requireAuth();
-    initPolls();
-});
+    document.addEventListener('DOMContentLoaded', async function() {
+        await requireAuth();
+    });
 </script>
 </body>
 </html>
