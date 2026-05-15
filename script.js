@@ -1718,9 +1718,9 @@ var NOTIF_TOPICS = [
     { key: 'calendar',  label: 'Calendar',  icon: '📅' },
     { key: 'videos',    label: 'Videos',    icon: '🎥' },
     { key: 'forum',     label: 'Forum',     icon: '💬' },
-    { key: 'documents', label: 'Documents', icon: '📄', adminOnly: true },
-    { key: 'polls',     label: 'Polls',     icon: '📊', adminOnly: true },
-    { key: 'forsale',   label: 'For Sale',  icon: '🏷️', adminOnly: true }
+    { key: 'documents', label: 'Documents', icon: '📄' },
+    { key: 'polls',     label: 'Polls',     icon: '📊' },
+    { key: 'forsale',   label: 'For Sale',  icon: '🏷️' }
 ];
 
 async function initNotificationSettings() {

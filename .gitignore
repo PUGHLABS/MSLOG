@@ -1,8 +1,9 @@
 # Keep template for reference
 # Note: Firebase API keys are safe to be public - security comes from Firestore rules
 
-# Claude Code settings
-.claude/
+# Claude Code settings (share commands, ignore local config)
+.claude/settings.json
+.claude/settings.local.json
 
 # OS files
 .DS_Store
