@@ -103,19 +103,24 @@ async function sendNotifications(topic, subject, bodyHtml) {
     if (!resend) return;
 
     const html = emailWrapper(bodyHtml);
-    const results = await Promise.allSettled(emails.map(to =>
-        resend.emails.send({ from: 'MSLOG <noreply@mtspokanelandgroup.org>', to, subject, html })
-    ));
-    results.forEach((r, i) => {
-        if (r.status === 'rejected') {
-            console.error(`Email to ${emails[i]} failed:`, r.reason);
-        } else if (r.value?.error) {
-            console.error(`Email to ${emails[i]} rejected by Resend:`, r.value.error);
-        } else {
-            console.log(`Email to ${emails[i]} sent OK, id:`, r.value?.data?.id);
-        }
-    });
-    console.log(`Attempted "${subject}" to ${emails.length} members`);
+    const BATCH = 4; // stay under Resend's 5 req/s limit
+    for (let i = 0; i < emails.length; i += BATCH) {
+        const batch = emails.slice(i, i + BATCH);
+        const results = await Promise.allSettled(batch.map(to =>
+            resend.emails.send({ from: 'MSLOG <noreply@mtspokanelandgroup.org>', to, subject, html })
+        ));
+        results.forEach((r, j) => {
+            if (r.status === 'rejected') {
+                console.error(`Email to ${batch[j]} failed:`, r.reason);
+            } else if (r.value?.error) {
+                console.error(`Email to ${batch[j]} rejected by Resend:`, r.value.error);
+            } else {
+                console.log(`Email to ${batch[j]} sent OK, id:`, r.value?.data?.id);
+            }
+        });
+        if (i + BATCH < emails.length) await new Promise(r => setTimeout(r, 1100));
+    }
+    console.log(`Sent "${subject}" to ${emails.length} members`);
 }
 
 // ─── Member / registration notifications ─────────────────────────
@@ -364,6 +369,65 @@ exports.notifyNewThread = functions.firestore
                  <a href="https://mtspokanelandgroup.org/forum.html"
                     style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
                      View Discussion
+                 </a>
+             </div>`
+        );
+        return null;
+    });
+
+exports.notifyNewPoll = functions.firestore
+    .document('polls/{pollId}')
+    .onCreate(async (snap) => {
+        const p = snap.data();
+        const optionsHtml = Array.isArray(p.options)
+            ? '<ul style="color:#555;line-height:1.8;padding-left:1.2em;">' +
+              p.options.map(o => `<li>${o}</li>`).join('') +
+              '</ul>'
+            : '';
+        await sendNotifications('polls', `New Poll: ${p.question}`,
+            `<h2 style="color:#063559;margin-top:0;">${p.question}</h2>
+             ${optionsHtml}
+             <div style="text-align:center;margin:24px 0;">
+                 <a href="https://mtspokanelandgroup.org/polls.html"
+                    style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+                     Vote Now
+                 </a>
+             </div>`
+        );
+        return null;
+    });
+
+exports.notifyNewDocument = functions.firestore
+    .document('documents/{docId}')
+    .onCreate(async (snap) => {
+        const d = snap.data();
+        await sendNotifications('documents', `New Document: ${d.title}`,
+            `<h2 style="color:#063559;margin-top:0;">${d.title}</h2>
+             ${d.category ? `<p style="color:#7E8994;font-size:13px;text-transform:uppercase;letter-spacing:.05em;">${d.category}</p>` : ''}
+             ${d.description ? `<p style="color:#555;line-height:1.6;">${d.description}</p>` : ''}
+             <div style="text-align:center;margin:24px 0;">
+                 <a href="https://mtspokanelandgroup.org/documents.html"
+                    style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+                     View Documents
+                 </a>
+             </div>`
+        );
+        return null;
+    });
+
+exports.notifyNewListing = functions.firestore
+    .document('listings/{listingId}')
+    .onCreate(async (snap) => {
+        const l = snap.data();
+        const priceStr = l.price ? `$${Number(l.price).toLocaleString()}` : '';
+        await sendNotifications('forsale', `New Listing${l.lotNumber ? ': Lot ' + l.lotNumber : ''}`,
+            `${l.lotNumber ? `<h2 style="color:#063559;margin-top:0;">Lot ${l.lotNumber}</h2>` : ''}
+             ${priceStr ? `<p style="color:#F9812A;font-size:1.5rem;font-weight:800;margin:0 0 12px;">${priceStr}</p>` : ''}
+             ${l.description ? `<p style="color:#555;line-height:1.6;">${l.description}</p>` : ''}
+             <div style="text-align:center;margin:24px 0;">
+                 <a href="https://mtspokanelandgroup.org/forsale.html"
+                    style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+                     View Listing
                  </a>
              </div>`
         );
