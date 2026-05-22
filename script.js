@@ -1156,6 +1156,72 @@ function sanitizeHtml(html) {
     });
     return div.innerHTML;
 }
+// ─── Forum photo helpers ─────────────────────────────────────────
+
+async function uploadForumPhotos(files) {
+    var results = [];
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        if (!file.type.startsWith('image/')) continue;
+        var safeName = Date.now() + '_' + i + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        var path = 'forum-images/' + currentUser.uid + '/' + safeName;
+        var ref = storage.ref(path);
+        await ref.put(file, { contentType: file.type });
+        var url = await ref.getDownloadURL();
+        results.push({ url: url, storagePath: path });
+    }
+    return results;
+}
+
+async function deleteForumPhotos(photos) {
+    if (!photos || !photos.length) return;
+    await Promise.allSettled(photos.map(function(p) {
+        return storage.ref(p.storagePath).delete();
+    }));
+}
+
+function renderPhotoGrid(photos, threadId) {
+    return '<div class="flex flex-wrap gap-2 mt-3" id="pgrid-' + threadId + '">' +
+        photos.map(function(p) {
+            return '<img src="' + escapeHtml(p.url) + '" onclick="openLightbox(this.dataset.url)" ' +
+                'data-url="' + escapeHtml(p.url) + '" data-path="' + escapeHtml(p.storagePath) + '" ' +
+                'class="h-20 w-20 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity" alt="Thread photo">';
+        }).join('') +
+        '</div>';
+}
+
+function openLightbox(url) {
+    var lb = document.getElementById('lightbox');
+    var img = document.getElementById('lightbox-img');
+    if (!lb || !img) return;
+    img.src = url;
+    lb.classList.remove('hidden');
+}
+
+function closeLightbox() {
+    var lb = document.getElementById('lightbox');
+    if (lb) lb.classList.add('hidden');
+}
+
+function removeEditPhoto(threadId, index) {
+    var photos = window['editPhotos_' + threadId];
+    if (!photos) return;
+    var removed = photos.splice(index, 1)[0];
+    if (removed) {
+        window['editRemovals_' + threadId] = window['editRemovals_' + threadId] || [];
+        window['editRemovals_' + threadId].push(removed);
+    }
+    var container = document.getElementById('edit-photos-' + threadId);
+    if (!container) return;
+    container.innerHTML = photos.map(function(p, i) {
+        return '<div class="relative">' +
+            '<img src="' + escapeHtml(p.url) + '" class="h-16 w-16 object-cover rounded-lg" alt="Photo">' +
+            '<button type="button" onclick="removeEditPhoto(\'' + threadId + '\',' + i + ')" ' +
+            'class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center leading-none">&times;</button>' +
+            '</div>';
+    }).join('');
+}
+
 function isNewThread(createdAt) {
     if (!createdAt) return false;
     var threeDaysAgo = new Date();
@@ -1199,6 +1265,7 @@ function renderThreadItem(doc, isAdmin, currentUserId) {
         '</div>' +
         '<p class="text-[#7E8994] text-xs mt-1">Posted by ' + escapeHtml(data.authorName || 'Unknown') + ' &mdash; ' + dateStr + '</p>' +
         '<div class="forum-body mt-2 text-sm text-[#64748b]" id="bdy-' + doc.id + '">' + (data.body ? sanitizeHtml(data.body) : '') + '</div>' +
+        (data.photos && data.photos.length ? renderPhotoGrid(data.photos, doc.id) : '') +
         actionBar +
         '<div id="edit-panel-' + doc.id + '" class="hidden mt-3"></div>' +
         '<div id="reply-panel-' + doc.id + '" class="hidden mt-3 border-t border-[#f1f5f9] pt-3"></div>' +
@@ -1233,12 +1300,18 @@ async function loadThreads() {
 async function addThread(title, body) {
     try {
         var auth = getAuth();
+        var photoInput = document.getElementById('thread-photos');
+        var photos = [];
+        if (photoInput && photoInput.files && photoInput.files.length) {
+            photos = await uploadForumPhotos(Array.from(photoInput.files).slice(0, 4));
+        }
         await db.collection('threads').add({
             title: title,
             body: body,
             authorId: currentUser ? currentUser.uid : null,
             authorName: auth ? auth.name : 'Anonymous',
             replyCount: 0,
+            photos: photos,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         return { success: true };
@@ -1252,6 +1325,8 @@ async function deleteThread(threadId) {
     if (!confirm('Are you sure you want to delete this thread?')) return;
 
     try {
+        var snap = await db.collection('threads').doc(threadId).get();
+        if (snap.exists) await deleteForumPhotos(snap.data().photos || []);
         await db.collection('threads').doc(threadId).delete();
         var item = document.querySelector('.thread-card[data-id="' + threadId + '"]');
         if (item) item.remove();
@@ -1363,9 +1438,32 @@ function startEditThread(threadId) {
     if (!panel) return;
     var titleEl = document.getElementById('ttl-' + threadId);
     var bodyEl  = document.getElementById('bdy-' + threadId);
+
+    // Load existing photos from the rendered grid (data attributes)
+    var existingPhotos = [];
+    var pgrid = document.getElementById('pgrid-' + threadId);
+    if (pgrid) {
+        pgrid.querySelectorAll('img').forEach(function(img) {
+            existingPhotos.push({ url: img.dataset.url, storagePath: img.dataset.path });
+        });
+    }
+    window['editPhotos_' + threadId]   = existingPhotos.slice();
+    window['editRemovals_' + threadId] = [];
+
+    var slotsLeft = 4 - existingPhotos.length;
+    var existingHtml = existingPhotos.map(function(p, i) {
+        return '<div class="relative">' +
+            '<img src="' + escapeHtml(p.url) + '" class="h-16 w-16 object-cover rounded-lg" alt="Photo">' +
+            '<button type="button" onclick="removeEditPhoto(\'' + threadId + '\',' + i + ')" ' +
+            'class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center leading-none">&times;</button>' +
+            '</div>';
+    }).join('');
+
     panel.innerHTML =
         '<input type="text" id="etl-' + threadId + '" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-1.5 text-sm mb-2" placeholder="Title">' +
         '<div id="ebe-' + threadId + '" class="forum-editor mb-2"></div>' +
+        (existingPhotos.length ? '<div class="flex flex-wrap gap-2 mb-2" id="edit-photos-' + threadId + '">' + existingHtml + '</div>' : '<div class="flex flex-wrap gap-2 mb-2" id="edit-photos-' + threadId + '"></div>') +
+        (slotsLeft > 0 ? '<div class="mb-2"><label class="block text-xs font-medium text-[#7E8994] mb-1">Add photos (up to ' + slotsLeft + ' more)</label><input type="file" id="edit-new-photos-' + threadId + '" accept="image/*" multiple class="text-sm text-[#7E8994]"></div>' : '') +
         '<div class="flex gap-2">' +
         '<button onclick="saveThreadEdit(\'' + threadId + '\')" class="btn-primary px-3 py-1 rounded-lg text-xs font-semibold">Save</button>' +
         '<button onclick="cancelEditThread(\'' + threadId + '\')" class="btn-secondary px-3 py-1 rounded-lg text-xs">Cancel</button>' +
@@ -1388,6 +1486,8 @@ function cancelEditThread(threadId) {
     var panel = document.getElementById('edit-panel-' + threadId);
     if (panel) { panel.classList.add('hidden'); panel.innerHTML = ''; }
     delete window['editQuill_' + threadId];
+    delete window['editPhotos_' + threadId];
+    delete window['editRemovals_' + threadId];
 }
 
 async function saveThreadEdit(threadId) {
@@ -1398,15 +1498,47 @@ async function saveThreadEdit(threadId) {
     if (!newTitle) return;
     var newBody = quill ? (quill.getLength() > 1 ? quill.root.innerHTML : '') : '';
     try {
+        // Delete removed photos from Storage
+        var removals = window['editRemovals_' + threadId] || [];
+        await deleteForumPhotos(removals);
+
+        // Upload any new photos
+        var newPhotos = [];
+        var newPhotoInput = document.getElementById('edit-new-photos-' + threadId);
+        if (newPhotoInput && newPhotoInput.files && newPhotoInput.files.length) {
+            var kept = (window['editPhotos_' + threadId] || []).length;
+            var slots = 4 - kept;
+            if (slots > 0) {
+                newPhotos = await uploadForumPhotos(Array.from(newPhotoInput.files).slice(0, slots));
+            }
+        }
+
+        var finalPhotos = (window['editPhotos_' + threadId] || []).concat(newPhotos);
+
         await db.collection('threads').doc(threadId).update({
             title: newTitle,
             body: newBody,
+            photos: finalPhotos,
             editedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         var titleEl = document.getElementById('ttl-' + threadId);
         var bodyEl  = document.getElementById('bdy-' + threadId);
         if (titleEl) titleEl.textContent = newTitle;
         if (bodyEl)  bodyEl.innerHTML = sanitizeHtml(newBody);
+
+        // Update photo grid in the DOM
+        var pgrid = document.getElementById('pgrid-' + threadId);
+        if (finalPhotos.length) {
+            var newGridHtml = renderPhotoGrid(finalPhotos, threadId);
+            if (pgrid) {
+                pgrid.outerHTML = newGridHtml;
+            } else {
+                bodyEl.insertAdjacentHTML('afterend', newGridHtml);
+            }
+        } else if (pgrid) {
+            pgrid.remove();
+        }
+
         cancelEditThread(threadId);
     } catch(e) {
         console.error('Edit error:', e);
@@ -1438,6 +1570,28 @@ function initForum() {
         });
     }
 
+    // Photo preview listener
+    var photoInput = document.getElementById('thread-photos');
+    var previews   = document.getElementById('thread-photo-previews');
+    if (photoInput && previews) {
+        photoInput.addEventListener('change', function() {
+            previews.innerHTML = '';
+            var files = Array.from(photoInput.files);
+            if (files.length > 4) {
+                photoInput.value = '';
+                previews.innerHTML = '<p class="text-xs text-red-500">Maximum 4 photos allowed.</p>';
+                return;
+            }
+            files.forEach(function(file) {
+                if (!file.type.startsWith('image/')) return;
+                var img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.className = 'h-16 w-16 object-cover rounded-lg';
+                previews.appendChild(img);
+            });
+        });
+    }
+
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         var title = document.getElementById('thread-title').value.trim();
@@ -1459,6 +1613,7 @@ function initForum() {
             if (success) success.classList.remove('hidden');
             form.reset();
             if (quill) quill.setContents([]);
+            if (previews) previews.innerHTML = '';
             document.getElementById('new-thread-panel').classList.add('hidden');
             loadThreads(); // Refresh the list
             if (success) setTimeout(function() { success.classList.add('hidden'); }, 3000);
