@@ -88,14 +88,20 @@
             <p class="text-[#94A1B0] text-sm mt-1">Search and browse all landowner members</p>
         </div>
 
+        <!-- View toggle (admin only) -->
+        <div id="dir-view-toggle" class="admin-only mb-4 inline-flex rounded-lg border border-[#e2e8f0] bg-white shadow-sm overflow-hidden">
+            <button id="dir-tab-members" type="button" class="px-4 py-2 text-sm font-semibold bg-[#063559] text-white">Members</button>
+            <button id="dir-tab-parcels" type="button" class="px-4 py-2 text-sm font-semibold text-[#063559]">Landowners</button>
+        </div>
+
         <!-- Search bar -->
         <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
-            <label for="dir-search" class="block text-sm font-medium text-[#063559] mb-2">Search Members</label>
+            <label for="dir-search" id="dir-search-label" class="block text-sm font-medium text-[#063559] mb-2">Search Members</label>
             <input type="search" id="dir-search" placeholder="Search by name, lot, email, or phone…" class="form-input w-full border border-[#94A1B0] rounded-lg px-4 py-2.5 text-sm">
         </div>
 
         <!-- Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-x-auto">
+        <div id="member-table-wrap" class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-x-auto">
             <table class="data-table" id="dir-table">
                 <thead>
                     <tr>
@@ -113,9 +119,63 @@
             <p id="dir-no-results" class="hidden text-[#7E8994] text-sm text-center py-6">No members match your search.</p>
         </div>
 
+        <!-- Parcel registry table (admin only, shown via Landowners tab) -->
+        <div id="parcel-table-wrap" class="hidden bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-x-auto">
+            <table class="data-table" id="parcel-table">
+                <thead>
+                    <tr>
+                        <th>Parcel</th>
+                        <th>Owner</th>
+                        <th>Owner Address</th>
+                        <th>Taxpayer</th>
+                        <th>Taxpayer Address</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="parcel-tbody">
+                    <tr><td colspan="7" class="text-center py-8 text-[#94A1B0]">Loading parcels...</td></tr>
+                </tbody>
+            </table>
+            <p id="parcel-no-results" class="hidden text-[#7E8994] text-sm text-center py-6">No parcels match your search.</p>
+        </div>
+
         <p id="dir-count" class="text-[#7E8994] text-xs mt-3"></p>
     </div>
 </main>
+
+<!-- Parcel edit modal (admin only) -->
+<div id="parcel-edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <form id="parcel-edit-form" class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <h3 id="parcel-edit-title" class="text-lg font-bold text-[#063559] mb-4">Edit Parcel</h3>
+        <div class="space-y-3">
+            <div>
+                <label for="pe-owner-name" class="block text-sm font-medium text-[#063559] mb-1">Owner Name</label>
+                <input type="text" id="pe-owner-name" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+                <label for="pe-owner-address" class="block text-sm font-medium text-[#063559] mb-1">Owner Address</label>
+                <input type="text" id="pe-owner-address" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+                <label for="pe-taxpayer-name" class="block text-sm font-medium text-[#063559] mb-1">Taxpayer Name</label>
+                <input type="text" id="pe-taxpayer-name" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+                <label for="pe-taxpayer-address" class="block text-sm font-medium text-[#063559] mb-1">Taxpayer Address</label>
+                <input type="text" id="pe-taxpayer-address" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+                <label for="pe-data-asof" class="block text-sm font-medium text-[#063559] mb-1">Data As Of</label>
+                <input type="date" id="pe-data-asof" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+            </div>
+        </div>
+        <div class="flex gap-3 mt-5">
+            <button type="submit" class="bg-[#F9812A] hover:bg-[#e0731f] text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors">Save</button>
+            <button type="button" onclick="closeParcelEdit()" class="bg-[#e2e8f0] hover:bg-[#cbd5e1] text-[#063559] text-sm font-semibold px-5 py-2 rounded-lg transition-colors">Cancel</button>
+        </div>
+    </form>
+</div>
 
 <!-- ─── FOOTER ─── -->
 <footer class="bg-[#063559] text-[#94A1B0] py-8 px-4 mt-auto">

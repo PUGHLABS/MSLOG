@@ -26,6 +26,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Parcel registry (official county landowner data) - admin only
+    match /parcels/{parcelId} {
+      allow read, write: if isAdmin();
+    }
+
     // Contact messages - anyone can create (public form), only admin can read/update/delete
     match /contact_messages/{messageId} {
       allow create: if true;

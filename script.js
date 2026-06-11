@@ -505,21 +505,206 @@ async function loadMembers() {
 }
 
 // ─── Directory search / filter ───────────────────────────────────
+function applyDirFilter() {
+    var input = document.getElementById('dir-search');
+    if (!input) return;
+    var q = input.value.toLowerCase();
+    var onParcels = currentDirView === 'parcels';
+    var rows = document.querySelectorAll(onParcels ? '#parcel-tbody tr' : '#dir-tbody tr');
+    var count = 0;
+    rows.forEach(function(row) {
+        var match = row.textContent.toLowerCase().indexOf(q) !== -1;
+        row.style.display = match ? '' : 'none';
+        if (match) count++;
+    });
+    var noRes = document.getElementById(onParcels ? 'parcel-no-results' : 'dir-no-results');
+    if (noRes) noRes.style.display = count === 0 ? 'block' : 'none';
+}
+
 function initSearch() {
     var input = document.getElementById('dir-search');
     if (!input) return;
+    input.addEventListener('input', applyDirFilter);
+}
 
-    input.addEventListener('input', function() {
-        var q    = this.value.toLowerCase();
-        var rows = document.querySelectorAll('#dir-table tbody tr');
-        var count = 0;
-        rows.forEach(function(row) {
-            var match = row.textContent.toLowerCase().indexOf(q) !== -1;
-            row.style.display = match ? '' : 'none';
-            if (match) count++;
+// ─── Parcel Registry (admin-only Landowners view) ─────────────────
+var currentDirView = 'members';
+var parcelDataById = {};
+var parcelMemberLots = new Set();
+var parcelsLoaded = false;
+
+function initDirToggle() {
+    var tabMembers = document.getElementById('dir-tab-members');
+    var tabParcels = document.getElementById('dir-tab-parcels');
+    if (!tabMembers || !tabParcels) return;
+
+    tabMembers.addEventListener('click', function() { showDirView('members'); });
+    tabParcels.addEventListener('click', function() { showDirView('parcels'); });
+}
+
+function showDirView(view) {
+    currentDirView = view;
+    var onParcels = view === 'parcels';
+
+    var memberWrap = document.getElementById('member-table-wrap');
+    var parcelWrap = document.getElementById('parcel-table-wrap');
+    if (memberWrap) memberWrap.classList.toggle('hidden', onParcels);
+    if (parcelWrap) parcelWrap.classList.toggle('hidden', !onParcels);
+
+    var activeCls = ['bg-[#063559]', 'text-white'];
+    var idleCls = ['text-[#063559]'];
+    var tabMembers = document.getElementById('dir-tab-members');
+    var tabParcels = document.getElementById('dir-tab-parcels');
+    if (tabMembers && tabParcels) {
+        var on = onParcels ? tabParcels : tabMembers;
+        var off = onParcels ? tabMembers : tabParcels;
+        activeCls.forEach(function(c) { on.classList.add(c); off.classList.remove(c); });
+        idleCls.forEach(function(c) { off.classList.add(c); on.classList.remove(c); });
+    }
+
+    var input = document.getElementById('dir-search');
+    var label = document.getElementById('dir-search-label');
+    if (input) input.placeholder = onParcels ? 'Search by parcel, owner, or taxpayer…' : 'Search by name, lot, email, or phone…';
+    if (label) label.textContent = onParcels ? 'Search Landowners' : 'Search Members';
+
+    if (onParcels && !parcelsLoaded) {
+        parcelsLoaded = true;
+        loadParcels();
+    } else {
+        applyDirFilter();
+        updateDirCount();
+    }
+}
+
+function updateDirCount() {
+    var countEl = document.getElementById('dir-count');
+    if (!countEl) return;
+    if (currentDirView === 'parcels') {
+        var n = Object.keys(parcelDataById).length;
+        var asOf = '';
+        Object.keys(parcelDataById).forEach(function(id) {
+            var d = parcelDataById[id].dataAsOf || '';
+            if (d > asOf) asOf = d;
         });
-        var noRes = document.getElementById('dir-no-results');
-        if (noRes) noRes.style.display = count === 0 ? 'block' : 'none';
+        countEl.textContent = 'Showing ' + n + ' parcel' + (n !== 1 ? 's' : '') + (asOf ? ' · data as of ' + asOf : '') + '.';
+    } else {
+        var rows = document.querySelectorAll('#dir-tbody tr[data-id]');
+        countEl.textContent = 'Showing ' + rows.length + ' member' + (rows.length !== 1 ? 's' : '') + '.';
+    }
+}
+
+function renderParcelRow(id, data) {
+    var isMember = parcelMemberLots.has(data.parcel);
+    var statusCell = isMember ? '<span class="badge badge-member">Member</span>' : '—';
+
+    return '<tr data-id="' + id + '">' +
+        '<td>' + escapeHtml(data.parcel || '—') + '</td>' +
+        '<td>' + escapeHtml(data.ownerName || '—') + '</td>' +
+        '<td>' + escapeHtml(data.ownerAddress || '—') + '</td>' +
+        '<td>' + escapeHtml(data.taxpayerName || '—') + '</td>' +
+        '<td>' + escapeHtml(data.taxpayerAddress || '—') + '</td>' +
+        '<td>' + statusCell + '</td>' +
+        '<td><button onclick="openParcelEdit(\'' + id + '\')" class="text-[#F9812A] text-xs font-semibold hover:underline">Edit</button></td>' +
+        '</tr>';
+}
+
+async function loadParcels() {
+    var tbody = document.getElementById('parcel-tbody');
+    if (!tbody || !isAdmin()) return;
+
+    try {
+        var results = await Promise.all([
+            db.collection('parcels').get(),
+            db.collection('members').where('status', '==', 'approved').get()
+        ]);
+
+        parcelMemberLots = new Set();
+        results[1].forEach(function(doc) {
+            var lot = doc.data().lot;
+            if (lot) parcelMemberLots.add(lot);
+        });
+
+        if (results[0].empty) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-[#94A1B0]">No parcel records found.</td></tr>';
+            updateDirCount();
+            return;
+        }
+
+        // Sort client-side by parcel number
+        var parcels = [];
+        parcelDataById = {};
+        results[0].forEach(function(doc) {
+            parcels.push(doc);
+            parcelDataById[doc.id] = doc.data();
+        });
+        parcels.sort(function(a, b) {
+            return (a.data().parcel || '').localeCompare(b.data().parcel || '');
+        });
+
+        var html = '';
+        parcels.forEach(function(doc) {
+            html += renderParcelRow(doc.id, doc.data());
+        });
+        tbody.innerHTML = html;
+
+        applyDirFilter();
+        updateDirCount();
+    } catch (e) {
+        console.error('Error loading parcels:', e);
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-red-500">Error loading parcels. Please refresh the page.</td></tr>';
+    }
+}
+
+function openParcelEdit(id) {
+    var data = parcelDataById[id];
+    var modal = document.getElementById('parcel-edit-modal');
+    var form = document.getElementById('parcel-edit-form');
+    if (!data || !modal || !form) return;
+
+    form.dataset.id = id;
+    document.getElementById('parcel-edit-title').textContent = 'Edit Parcel ' + (data.parcel || '');
+    document.getElementById('pe-owner-name').value = data.ownerName || '';
+    document.getElementById('pe-owner-address').value = data.ownerAddress || '';
+    document.getElementById('pe-taxpayer-name').value = data.taxpayerName || '';
+    document.getElementById('pe-taxpayer-address').value = data.taxpayerAddress || '';
+    document.getElementById('pe-data-asof').value = data.dataAsOf || '';
+    modal.classList.remove('hidden');
+}
+
+function closeParcelEdit() {
+    var modal = document.getElementById('parcel-edit-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function initParcelEditForm() {
+    var form = document.getElementById('parcel-edit-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var id = form.dataset.id;
+        if (!id) return;
+
+        var updates = {
+            ownerName: document.getElementById('pe-owner-name').value.trim(),
+            ownerAddress: document.getElementById('pe-owner-address').value.trim(),
+            taxpayerName: document.getElementById('pe-taxpayer-name').value.trim(),
+            taxpayerAddress: document.getElementById('pe-taxpayer-address').value.trim(),
+            dataAsOf: document.getElementById('pe-data-asof').value,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+            await db.collection('parcels').doc(id).update(updates);
+            parcelDataById[id] = Object.assign({}, parcelDataById[id], updates);
+            var row = document.querySelector('#parcel-tbody tr[data-id="' + id + '"]');
+            if (row) row.outerHTML = renderParcelRow(id, parcelDataById[id]);
+            closeParcelEdit();
+            updateDirCount();
+        } catch (err) {
+            console.error('Error updating parcel:', err);
+            alert('Error saving parcel. Please try again.');
+        }
     });
 }
 
@@ -1940,6 +2125,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initWeather();
     initCalendar();
     initSearch();
+    initDirToggle();
+    initParcelEditForm();
     initDocuments();
     initDocFilter();
     initVideos();
