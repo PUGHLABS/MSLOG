@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -190,14 +190,6 @@
                 <button id="backfill-notif-btn" onclick="backfillNotificationOptIns()" class="text-xs bg-[#063559] text-white hover:bg-[#0a4a78] px-4 py-2 rounded font-medium transition-colors whitespace-nowrap">Run backfill</button>
             </div>
             <p id="backfill-notif-status" class="text-xs mt-2 hidden"></p>
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 pt-4 border-t border-[#e2e8f0]">
-                <div>
-                    <p class="text-sm text-[#334155] font-medium">Import parcel registry</p>
-                    <p class="text-[#7E8994] text-xs mt-0.5">One-time import of the official county parcel list (owner names &amp; addresses) into the admin-only Landowners directory. Skips if data already exists.</p>
-                </div>
-                <button id="parcel-import-btn" onclick="importParcelRegistry()" class="text-xs bg-[#063559] text-white hover:bg-[#0a4a78] px-4 py-2 rounded font-medium transition-colors whitespace-nowrap">Import parcels</button>
-            </div>
-            <p id="parcel-import-status" class="text-xs mt-2 hidden"></p>
         </div>
 
     </div>
@@ -488,133 +480,6 @@ async function backfillNotificationOptIns() {
     }
 }
 
-// ─── One-time parcel registry import (remove after running) ──────
-const PARCEL_SEED = [
-    { parcel: '58221.0101', ownerName: 'PETERSON, COREY & MARY', ownerAddress: 'PO BOX 1383, DEER PARK, WA, 99006' },
-    { parcel: '58221.0102', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0103', ownerName: 'CALEY ETAL, GUY', ownerAddress: '17005 HAMLIN RD NE, LAKE FOREST, WA, 98155' },
-    { parcel: '58221.0104', ownerName: 'CHAPMAN, RONALD D/CHAPMAN, MARK E', ownerAddress: '6904 N JEFFERSON ST, SPOKANE, WA, 99208' },
-    { parcel: '58221.0105', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0106', ownerName: 'HELGERSON, PAUL M', ownerAddress: '37715 N SHEETS RD, ELK, WA, 99009' },
-    { parcel: '58221.0107', ownerName: 'PASSAGE TRU, WEST', ownerAddress: '6544 PINE RIDGE WAY, NINE MILE FALLS, WA, 99026' },
-    { parcel: '58221.0108', ownerName: 'ANDERSON, MICHELLE C', ownerAddress: '14234 N TORMEY RD, NINE MILE FALLS, WA, 99026' },
-    { parcel: '58221.0109', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0110', ownerName: 'KUWADA, STANLEY', ownerAddress: '6618 N WINDSOR ST, SPOKANE, WA, 99208' },
-    { parcel: '58221.0111', ownerName: 'PLATTNER, NATE', ownerAddress: 'PO BOX 9, PONDERAY, ID, 83852' },
-    { parcel: '58221.0112', ownerName: 'CROSSWHITE, RUSSELL K & SHARMAINE N', ownerAddress: '1902 S GARDEN LN, SPOKANE, WA, 99224-2123' },
-    { parcel: '58221.0113', ownerName: 'BARKELL, OLIVER', ownerAddress: '1965 CORONADO DR, BULLHEAD CITY, AZ, 86442' },
-    { parcel: '58221.0114', ownerName: 'BALL, JOSEPH M & PAMELA R', ownerAddress: '7525 S TOLEDO AVE, TULSA, OK, 74136' },
-    { parcel: '58221.0115', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0116', ownerName: 'CATALDO INVESTMENTS LLC', ownerAddress: '404 N PINES RD STE D, SPOKANE VALLEY, WA, 99206' },
-    { parcel: '58221.0117', ownerName: 'STREMME, JEREMY & TAYNA', ownerAddress: '2496 NW ARNOTT LN, PORTLAND, OR, 97229' },
-    { parcel: '58221.0118', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0119', ownerName: 'LANTZ, DIANA A', ownerAddress: '1966 CLEARVIEW RD, SOUDERTON, PA, 18964-1020' },
-    { parcel: '58221.0120', ownerName: 'CONRAD, CHARLES W', ownerAddress: '4835 OLYMPUS DR, COLORADO SPRINGS, CO, 80924' },
-    { parcel: '58221.0120', ownerName: 'SNOWBLAZE', ownerAddress: '20340 HUNTERS, CASTRO VALLEY, CA, 94552-5000' },
-    { parcel: '58221.0121', ownerName: 'TUPPERT, MATT & BRIANA TULLY', ownerAddress: '720 W EUCLID AVE, SPOKANE, WA, 99205' },
-    { parcel: '58221.0122', ownerName: 'LANNIGAN, TIMOTHY C / TULLY, PATRICIA A', ownerAddress: '2023 W 8TH AVE, SPOKANE, WA, 99204' },
-    { parcel: '58221.0123', ownerName: 'LANNIGAN, TIMOTHY C / TULLY, PATRICIA A', ownerAddress: '2023 W 8TH AVE, SPOKANE, WA, 99204' },
-    { parcel: '58221.0124', ownerName: 'LANNIGAN, TIM', ownerAddress: '2023 W 8TH AVE, SPOKANE, WA, 99204' },
-    { parcel: '58221.0125', ownerName: 'LANNIGAN, TIMOTHY C/TULLY, PATRICIA ANN', ownerAddress: '2023 W 8TH AVE, SPOKANE, WA, 99204' },
-    { parcel: '58221.0126', ownerName: 'CALEY ETAL, GUY', ownerAddress: '17005 HAMLIN RD NE, LAKE FOREST, WA, 98155' },
-    { parcel: '58221.0127', ownerName: 'PUGH, JEFFREY W', ownerAddress: '221 W 24TH AVE, SPOKANE, WA, 99203' },
-    { parcel: '58221.0128', ownerName: 'PUGH, JEFF & KIRSTEN', ownerAddress: '221 W 24TH AVE, SPOKANE, WA, 99203' },
-    { parcel: '58221.0129', ownerName: 'PUGH, JEFF & KIRSTEN', ownerAddress: '221 W 24TH AVE, SPOKANE, WA, 99203' },
-    { parcel: '58221.0130', ownerName: 'PUGH, JEFFREY W & KIRSTEN E', ownerAddress: '221 W 24TH AVE, SPOKANE, WA, 99203' },
-    { parcel: '58221.0131', ownerName: 'PUGH, JEFFREY W & KIRSTEN E', ownerAddress: '221 W 24TH AVE, SPOKANE, WA, 99203' },
-    { parcel: '58221.0132', ownerName: 'SCHRANKEL, SAMUEL L & BELINDA M', ownerAddress: '3411 W EUCLID, SPOKANE, WA, 99205' },
-    { parcel: '58221.0133', ownerName: 'RIEGEL, JACK F & LILLIAM CRUZ', ownerAddress: '4416 ROLLINGBROOKE CT, ALEXANDRIA, VA, 22306' },
-    { parcel: '58221.0134', ownerName: 'PECK, TROY & MIKIKO', ownerAddress: '9806 N HUNTINGTON RD, SPOKANE, WA, 99218' },
-    { parcel: '58221.0135', ownerName: 'LEDEZMA, HECTOR JR', ownerAddress: 'PO BOX 293, ROYAL CITY, WA, 99357' },
-    { parcel: '58221.0136', ownerName: 'BALL, JOSEPH M & PAMELA R', ownerAddress: '7525 S TOLEDO AVE, TULSA, OK, 74136-6109' },
-    { parcel: '58221.0137', ownerName: 'PUGH, JEFF W', ownerAddress: '221 W 24TH AVE, SPOKANE, WA, 99203' },
-    { parcel: '58221.0138', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0139', ownerName: 'STUMBO, JOSH & JULIE', ownerAddress: '15918 N WOODCREST CT, SPOKANE, WA, 99208' },
-    { parcel: '58221.0140', ownerName: 'CROSSWHITE, RUSSELL K & SHARMAINE N', ownerAddress: '1902 S GARDEN LN, SPOKANE, WA, 99224-2123' },
-    { parcel: '58221.0141', ownerName: 'GETMAN, STEVEN', ownerAddress: '1225 E 20TH AVE, SPOKANE, WA, 99203-3435' },
-    { parcel: '58221.0142', ownerName: 'MILLSAP, ROBERT A', ownerAddress: '3211 W KIERNAN AVE, SPOKANE, WA, 99205-2273' },
-    { parcel: '58221.0143', ownerName: 'MILLSAP, ROBERT A', ownerAddress: '3211 W KIERNAN AVE, SPOKANE, WA, 99205-2273' },
-    { parcel: '58221.0144', ownerName: 'SMOLINSKI, GEORGE & AMY', ownerAddress: 'CMR 402 BOX 1178, APO, AE, 09180' },
-    { parcel: '58221.0145', ownerName: 'CAMERER, ANDREW & CASSANDRA', ownerAddress: '11706 N WALL ST, SPOKANE, WA, 99218' },
-    { parcel: '58221.0146', ownerName: 'CAMERER, ANDREW & CASSANDRA', ownerAddress: '11706 N WALL CT, SPOKANE, WA, 99218' },
-    { parcel: '58221.0201', ownerName: 'NICE, DWYLA C', ownerAddress: '4459 GARDENSPOT RD, CLAYTON, WA, 99110' },
-    { parcel: '58221.0202', ownerName: 'CROSSWHITE, SHARMAINE N & RUSSELL K', ownerAddress: '1902 S GARDEN LN, SPOKANE, WA, 99224' },
-    { parcel: '58221.0203', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0204', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0205', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0206', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0207', ownerName: 'DEVRIES, PATRICK & SUSAN', ownerAddress: '4325 S PONDRA DR, SPOKANE, WA, 99206-9657' },
-    { parcel: '58221.0208', ownerName: 'NORTHWESTERN INTEGRITY BUILDERS LLC', ownerAddress: '1217 E WABASH AVE, SPOKANE, WA, 99207' },
-    { parcel: '58221.0209', ownerName: 'NORTHWESTERN INTEGRITY BUILDERS LLC', ownerAddress: '1218 E WABASH AVE, SPOKANE, WA, 99207' },
-    { parcel: '58221.0210', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0211', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0212', ownerName: 'OAKLEY, RUSSELL NEAL', ownerAddress: '639 N RIVERPOINT BLVD APT 3W, SPOKANE, WA, 99202-1674' },
-    { parcel: '58221.0213', ownerName: 'STUMBO, JOSH & JULIE', ownerAddress: '15918 N WOODCREST CT, SPOKANE, WA, 99208' },
-    { parcel: '58221.0214', ownerName: 'BOOS LIVING TRUST, BRIAN C & DAWN R', ownerAddress: '4251 E RUNAWAY BAY DR, CHANDLER, AZ, 85249' },
-    { parcel: '58221.0215', ownerName: 'MILLSAP, ROBERT A & FRESHTEH A', ownerAddress: '3211 W KIERNAN AVE, SPOKANE, WA, 99205' },
-    { parcel: '58221.0216', ownerName: 'MILLSAP, ROBERT A & FRESHTEH A', ownerAddress: '3212 W KIERNAN AVE, SPOKANE, WA, 99205' },
-    { parcel: '58221.0217', ownerName: 'AD, VILLA EST 2ND', ownerAddress: '5304 S SAINT ANDREWS LN, SPOKANE, WA, 99223' },
-    { parcel: '58221.0218', ownerName: 'LEDEZMA, HECTOR JR', ownerAddress: 'PO BOX 293, ROYAL CITY, WA, 99357' },
-    { parcel: '58221.0219', ownerName: 'WOODS, RONALD A', ownerAddress: 'PO BOX 1582, MEAD, WA, 99021' },
-    { parcel: '58221.0220', ownerName: 'CULVER, SEAN E', ownerAddress: '8106 E TONY CT, SPOKANE, WA, 99217' },
-    { parcel: '58221.0221', ownerName: 'KERR, TERRY', ownerAddress: '7924 E BROADVIEW DR, SPOKANE VALLEY, WA, 99212' },
-    { parcel: '58221.0222', ownerName: 'KERR, TERRY', ownerAddress: '7925 E BROADVIEW DR, SPOKANE VALLEY, WA, 99212' },
-    { parcel: '58221.0223', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0224', ownerName: 'KINCAID, RONALD R & BRIANA C', ownerAddress: '8032 E WOODVIEW DR, SPOKANE, WA, 99212' },
-    { parcel: '58221.0225', ownerName: 'HARRIS, DYLAN & ADANA', ownerAddress: '5512 N HAVANA ST, SPOKANE, WA, 99217' }
-];
-
-async function importParcelRegistry() {
-    const btn = document.getElementById('parcel-import-btn');
-    const status = document.getElementById('parcel-import-status');
-    const db = firebase.firestore();
-
-    btn.disabled = true;
-    status.classList.remove('hidden', 'text-red-600', 'text-green-600');
-    status.classList.add('text-[#7E8994]');
-    status.textContent = 'Checking existing data…';
-
-    try {
-        const existing = await db.collection('parcels').limit(1).get();
-        if (!existing.empty) {
-            status.textContent = 'Parcel registry already imported — nothing to do.';
-            return;
-        }
-
-        if (!confirm('Import ' + PARCEL_SEED.length + ' parcel records into the Landowners directory?')) {
-            status.classList.add('hidden');
-            return;
-        }
-
-        status.textContent = 'Importing ' + PARCEL_SEED.length + ' parcels…';
-        const batch = db.batch();
-        PARCEL_SEED.forEach(row => {
-            batch.set(db.collection('parcels').doc(), {
-                parcel: row.parcel,
-                ownerName: row.ownerName,
-                ownerAddress: row.ownerAddress,
-                taxpayerName: '',
-                taxpayerAddress: '',
-                dataAsOf: '2026-06-11',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        });
-        await batch.commit();
-
-        status.classList.remove('text-[#7E8994]');
-        status.classList.add('text-green-600');
-        status.textContent = 'Done. Imported ' + PARCEL_SEED.length + ' parcel records.';
-        btn.textContent = 'Imported';
-    } catch (e) {
-        console.error('Parcel import failed:', e);
-        status.classList.remove('text-[#7E8994]');
-        status.classList.add('text-red-600');
-        status.textContent = 'Import failed: ' + (e.message || e);
-    } finally {
-        btn.disabled = false;
-    }
-}
 </script>
 </body>
 </html>
