@@ -448,6 +448,15 @@ function initCalendar() {
 }
 
 // ─── Member Directory (Firestore) ────────────────────────────────
+// Display phone numbers as nnn.nnn.nnnn regardless of how they were entered
+function formatPhone(phone) {
+    if (!phone) return '';
+    var digits = String(phone).replace(/\D/g, '');
+    if (digits.length === 11 && digits.charAt(0) === '1') digits = digits.slice(1);
+    if (digits.length !== 10) return phone;
+    return digits.slice(0, 3) + '.' + digits.slice(3, 6) + '.' + digits.slice(6);
+}
+
 function renderMemberRow(doc) {
     var data = doc.data();
     var role = data.role || 'member';
@@ -458,7 +467,7 @@ function renderMemberRow(doc) {
         '<td>' + escapeHtml(data.name || 'Unknown') + '</td>' +
         '<td>' + escapeHtml(data.lot || '—') + '</td>' +
         '<td>' + escapeHtml(data.email || '—') + '</td>' +
-        '<td>' + escapeHtml(data.phone || '—') + '</td>' +
+        '<td>' + escapeHtml(formatPhone(data.phone) || '—') + '</td>' +
         '<td><span class="badge ' + badgeClass + '">' + badgeText + '</span></td>' +
         '</tr>';
 }

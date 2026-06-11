@@ -24,7 +24,7 @@ Mount Spokane Land Owners Group community portal. Vanilla HTML/JS/CSS + Firebase
 
 | File | Purpose |
 |---|---|
-| `script.js` | All client-side logic (~1800 lines) |
+| `script.js` | All client-side logic (~2100 lines) |
 | `styles.css` | Custom styles beyond Tailwind |
 | `firebase-config.js` | Firebase app init (safe to be public) |
 | `firestore.rules` | Firestore security rules |
@@ -83,9 +83,23 @@ storageRef.put(file, { contentType: 'application/pdf' })
 | Guest | Public pages only (index, contact) |
 | Member (pending) | Redirected to `pending.html` |
 | Member (active) | All member pages except gate code |
-| Admin | All pages + gate code + admin controls |
+| Admin | All pages + gate code + admin controls + Landowners tab on directory |
 
 Role stored as `role` field (`'member'` or `'admin'`) in `members/{uid}` Firestore document.
+
+---
+
+## Parcel Registry (Landowners)
+
+`directory.html` has an admin-only Members | Landowners toggle. The Landowners view reads the `parcels` Firestore collection (admin-only read/write rules) — the official county parcel list with owner and taxpayer name/address per parcel and a `dataAsOf` date. Doc IDs are auto-generated because parcel numbers can repeat (e.g. `58221.0120` has two owner records). Parcels matching a member's `lot` field get a "Member" badge, computed client-side at render time.
+
+---
+
+## UI Conventions
+
+- Admin-only elements: add class `admin-only` (CSS-hidden); `initNav()` strips it for admins after auth resolves
+- Phone numbers display as `nnn.nnn.nnnn` via `formatPhone()` in `script.js` regardless of stored format
+- Lot/parcel format: `58221.0137`, validated as `/^\d{5}\.\d{4}$/` on registration
 
 ---
 
