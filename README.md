@@ -9,6 +9,7 @@ Private community portal purpose-built for rural landowners on Mount Spokane, WA
 | Feature | Description |
 |---|---|
 | **Parcel Registry** | Admin-only Landowners view of the official county parcel list (owner + taxpayer per parcel), cross-referenced with a Member badge on parcels owned by registered members |
+| **Sales Tracker** | Admin-only "Sales (Last Year)" view of county-recorded sales, scraped weekly from Spokane County SCOUT with a digest email when new sales are recorded |
 | **Gate Code** | Admin updates 4-digit IEP gate code; members view with last-updated timestamp |
 | **For Sale Listings** | Property listings with lot number, price, and description; admin-managed |
 | **Member Directory** | Searchable roster with lot numbers (e.g. `58221.0137`), phone, email, and role |

@@ -31,6 +31,12 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // County-recorded parcel sales (written only by Cloud Functions via Admin SDK)
+    match /parcel_sales/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // Contact messages - anyone can create (public form), only admin can read/update/delete
     match /contact_messages/{messageId} {
       allow create: if true;

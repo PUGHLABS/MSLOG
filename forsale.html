@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
     <script src="firebase-config.js"></script>
     <style>
         .listing-card {
@@ -188,7 +189,9 @@
             <div class="flex gap-2">
                 <button data-filter="active" class="filter-btn active-filter px-3 py-1.5 rounded-full text-xs font-semibold border border-[#063559] bg-[#063559] text-white transition-colors">Active</button>
                 <button data-filter="all" class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold border border-[#e2e8f0] text-[#7E8994] hover:border-[#063559] hover:text-[#063559] transition-colors">All (incl. Sold)</button>
+                <button data-filter="sales" class="admin-only filter-btn px-3 py-1.5 rounded-full text-xs font-semibold border border-[#e2e8f0] text-[#7E8994] hover:border-[#063559] hover:text-[#063559] transition-colors">Sales (Last Year)</button>
             </div>
+            <button id="btn-refresh-sales" class="hidden text-xs text-[#7E8994] hover:text-[#063559] underline self-center">Refresh sales data</button>
             <div class="sm:ml-auto">
                 <select id="sort-select" class="form-input border border-[#94A1B0] rounded-lg px-3 py-1.5 text-sm">
                     <option value="newest">Newest First</option>
@@ -272,6 +275,8 @@
     var currentFilter = 'active';
     var currentSort = 'newest';
     var allListings = [];
+    var allSales = null;   // county-recorded sales, lazy-loaded on first view
+    var salesMeta = null;
 
     function fmtPrice(n) {
         return '$' + Number(n).toLocaleString('en-US');
@@ -327,7 +332,78 @@
         '</div>';
     }
 
+    // ── County sales (Sales Last Year view) ──
+    function fmtSaleDate(s) {
+        // 'YYYY-MM-DD' parsed at noon to avoid timezone off-by-one
+        try {
+            return new Date(s + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        } catch(e) { return s; }
+    }
+
+    function buildSaleCard(sale) {
+        return '<div class="listing-card">' +
+            '<div class="p-5 flex-1 flex flex-col gap-3">' +
+                '<div class="flex items-start justify-between gap-2">' +
+                    '<span class="lot-badge">Lot ' + sale.parcel + '</span>' +
+                    '<div class="price-tag">' + fmtPrice(sale.price) + '</div>' +
+                '</div>' +
+                '<p class="listing-desc">' + (sale.instrument || 'Recorded sale') + '</p>' +
+                '<p class="text-[#94A1B0] text-xs mt-auto">Sold ' + fmtSaleDate(sale.saleDate) + '</p>' +
+            '</div>' +
+        '</div>';
+    }
+
+    async function loadSales() {
+        var cutoff = new Date();
+        cutoff.setFullYear(cutoff.getFullYear() - 1);
+        var cutoffStr = cutoff.toISOString().slice(0, 10);
+
+        var snap = await db.collection('parcel_sales')
+            .where('saleDate', '>=', cutoffStr)
+            .orderBy('saleDate', 'desc')
+            .get();
+        allSales = [];
+        snap.forEach(function(doc) {
+            var s = doc.data();
+            if (Number(s.price) > 0) allSales.push(s); // hide $0 paper transfers
+        });
+
+        try {
+            var meta = await db.collection('settings').doc('parcelSales').get();
+            salesMeta = meta.exists ? meta.data() : null;
+        } catch(e) { salesMeta = null; }
+    }
+
+    async function renderSales() {
+        var grid = document.getElementById('listings-grid');
+        var count = document.getElementById('listings-count');
+
+        if (allSales === null) {
+            grid.innerHTML = '<div class="text-center py-12 text-[#94A1B0] col-span-full">Loading sales…</div>';
+            try {
+                await loadSales();
+            } catch(e) {
+                console.warn('Could not load sales:', e);
+                grid.innerHTML = '<div class="text-center py-12 text-red-500 col-span-full">Error loading sales data.</div>';
+                return;
+            }
+            if (currentFilter !== 'sales') return; // user switched away while loading
+        }
+
+        if (allSales.length === 0) {
+            grid.innerHTML = '<div class="text-center py-12 text-[#94A1B0] col-span-full">No recorded sales in the last year.</div>';
+        } else {
+            grid.innerHTML = allSales.map(buildSaleCard).join('');
+        }
+
+        var note = allSales.length + ' sale' + (allSales.length !== 1 ? 's' : '') + ' · Source: Spokane County SCOUT';
+        if (salesMeta && salesMeta.lastRun) note += ' · updated ' + fmtDate(salesMeta.lastRun);
+        count.textContent = note;
+    }
+
     function renderListings() {
+        if (currentFilter === 'sales') { renderSales(); return; }
+
         var grid = document.getElementById('listings-grid');
         var count = document.getElementById('listings-count');
         var source = allListings;
@@ -415,6 +491,7 @@
                 isAdmin = memberData.role === 'admin';
                 if (isAdmin) {
                     document.getElementById('btn-post-listing').classList.remove('hidden');
+                    document.getElementById('btn-refresh-sales').classList.remove('hidden');
                 } else {
                     var csLabel = document.createElement('span');
                     csLabel.className = 'coming-soon-label self-start sm:self-auto';
@@ -525,8 +602,32 @@
                 btn.classList.add('active-filter', 'bg-[#063559]', 'text-white', 'border-[#063559]');
                 btn.classList.remove('border-[#e2e8f0]', 'text-[#7E8994]');
                 currentFilter = btn.dataset.filter;
+                document.getElementById('sort-select').classList.toggle('hidden', currentFilter === 'sales');
                 renderListings();
             });
+        });
+
+        // Admin: manual county sales refresh via callable function
+        document.getElementById('btn-refresh-sales').addEventListener('click', async function() {
+            if (!confirm('Fetch latest sales data from Spokane County SCOUT now? Takes about 2 minutes.')) return;
+            var btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Refreshing… (~2 min)';
+            try {
+                var result = await firebase.functions().httpsCallable('refreshParcelSalesManual')();
+                var s = result.data;
+                alert('Done. Fetched ' + s.fetched + '/' + s.parcelCount + ' parcels, ' +
+                    s.salesUpserted + ' sales records, ' + s.newSales + ' new.' +
+                    (s.blocked403 ? '\n⚠ ' + s.blocked403 + ' requests blocked (403) by the county.' : '') +
+                    (s.lastError ? '\nLast error: ' + s.lastError : ''));
+                allSales = null; // force reload on next view
+                if (currentFilter === 'sales') renderListings();
+            } catch(e) {
+                alert('Refresh failed: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Refresh sales data';
+            }
         });
 
         // Sort

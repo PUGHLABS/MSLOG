@@ -91,12 +91,32 @@ function emailWrapper(bodyHtml) {
     </div>`;
 }
 
+/** Returns emails of all approved admins. */
+async function getAdminEmails() {
+    const snapshot = await admin.firestore()
+        .collection('members')
+        .where('role', '==', 'admin')
+        .get();
+    const emails = [];
+    snapshot.forEach(doc => {
+        const m = doc.data();
+        if (m.email && m.status === 'approved') emails.push(m.email);
+    });
+    return emails;
+}
+
 /**
  * Sends a notification email to all opted-in members for a topic.
  * Sends individually so one bad address doesn't block the rest.
  */
 async function sendNotifications(topic, subject, bodyHtml) {
     const emails = await getOptedInEmails(topic);
+    if (!emails.length) return;
+    await sendToEmails(emails, subject, bodyHtml);
+}
+
+/** Sends an email to an explicit list of recipients with the branded wrapper. */
+async function sendToEmails(emails, subject, bodyHtml) {
     if (!emails.length) return;
 
     const resend = getResend();
@@ -455,4 +475,84 @@ exports.notifyGateCodeChange = functions.firestore
              </div>`
         );
         return null;
+    });
+
+// ─── County parcel sales (SCOUT scraper) ─────────────────────────
+
+const { runParcelSalesRefresh } = require('./parcelSales');
+
+/** Sends the new-sales digest email and a Discord alert on failures. */
+async function handleSalesRefreshResult(summary) {
+    if (summary.newSales.length > 0) {
+        const rows = summary.newSales
+            .sort((a, b) => b.saleDate.localeCompare(a.saleDate))
+            .map(s => `<tr>
+                <td style="padding:6px 12px;border-bottom:1px solid #e2e8f0;">Lot ${s.parcel}</td>
+                <td style="padding:6px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;color:#F9812A;">$${Number(s.price).toLocaleString()}</td>
+                <td style="padding:6px 12px;border-bottom:1px solid #e2e8f0;">${s.saleDate}</td>
+            </tr>`).join('');
+        const plural = summary.newSales.length !== 1;
+        // Sales view is admin-only, so the digest goes to admins only
+        await sendToEmails(await getAdminEmails(),
+            `${summary.newSales.length} New Recorded Sale${plural ? 's' : ''} in Our Area`,
+            `<h2 style="color:#063559;margin-top:0;">New county-recorded sale${plural ? 's' : ''}</h2>
+             <p style="color:#555;line-height:1.6;">
+                 Spokane County has recorded the following sale${plural ? 's' : ''} on parcels in our area:
+             </p>
+             <table style="border-collapse:collapse;width:100%;margin:16px 0;">
+                 <tr style="background:#063559;color:white;">
+                     <th style="padding:6px 12px;text-align:left;">Parcel</th>
+                     <th style="padding:6px 12px;text-align:left;">Price</th>
+                     <th style="padding:6px 12px;text-align:left;">Sale Date</th>
+                 </tr>${rows}
+             </table>
+             <div style="text-align:center;margin:24px 0;">
+                 <a href="https://mtspokanelandgroup.org/forsale.html"
+                    style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+                     View Sales
+                 </a>
+             </div>`
+        );
+    }
+    if (summary.blocked403 > 0 || summary.failed > summary.parcelCount / 2) {
+        await sendDiscord({
+            title: '⚠️ Parcel sales refresh problems',
+            description: `Fetched ${summary.fetched}/${summary.parcelCount} parcels. ` +
+                `${summary.blocked403} blocked (403), ${summary.failed} failed.` +
+                (summary.lastError ? `\nLast error: ${summary.lastError}` : ''),
+            color: 0xF9812A
+        });
+    }
+}
+
+/**
+ * Weekly scrape of SCOUT sales data for all parcels in the registry.
+ */
+exports.refreshParcelSales = functions
+    .runWith({ timeoutSeconds: 300, memory: '256MB' })
+    .pubsub.schedule('every monday 06:00')
+    .timeZone('America/Los_Angeles')
+    .onRun(async () => {
+        const summary = await runParcelSalesRefresh(admin.firestore());
+        await handleSalesRefreshResult(summary);
+        return null;
+    });
+
+/**
+ * Admin-triggered manual refresh — used for the first data load and as the
+ * GCP-egress feasibility probe (county may block datacenter IPs).
+ */
+exports.refreshParcelSalesManual = functions
+    .runWith({ timeoutSeconds: 300, memory: '256MB' })
+    .https.onCall(async (data, context) => {
+        if (!context.auth) {
+            throw new functions.https.HttpsError('unauthenticated', 'Sign in required');
+        }
+        const member = await admin.firestore().collection('members').doc(context.auth.uid).get();
+        if (!member.exists || member.data().role !== 'admin') {
+            throw new functions.https.HttpsError('permission-denied', 'Admins only');
+        }
+        const summary = await runParcelSalesRefresh(admin.firestore());
+        await handleSalesRefreshResult(summary);
+        return { ...summary, newSales: summary.newSales.length };
     });

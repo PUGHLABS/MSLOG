@@ -93,6 +93,8 @@ Role stored as `role` field (`'member'` or `'admin'`) in `members/{uid}` Firesto
 
 `directory.html` has an admin-only Members | Landowners toggle. The Landowners view reads the `parcels` Firestore collection (admin-only read/write rules) — the official county parcel list with owner and taxpayer name/address per parcel and a `dataAsOf` date. Doc IDs are auto-generated because parcel numbers can repeat (e.g. `58221.0120` has two owner records). Parcels matching a member's `lot` field get a "Member" badge, computed client-side at render time.
 
+County-recorded sales: `functions/parcelSales.js` scrapes Spokane County SCOUT weekly (scheduled function `refreshParcelSales`, Mondays 6 AM Pacific; manual admin trigger `refreshParcelSalesManual`) and upserts into `parcel_sales` (admin-only read, no client writes; deterministic doc IDs `<parcel>_<exciseNumber>`). New sales trigger a digest email to admins. Displayed via the admin-only "Sales (Last Year)" filter on `forsale.html`. Note: the county may block datacenter IPs — if runs report `blocked403`, the fallback is running the same module locally with a service-account key.
+
 ---
 
 ## UI Conventions
