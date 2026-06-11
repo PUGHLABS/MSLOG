@@ -614,7 +614,8 @@
             btn.disabled = true;
             btn.textContent = 'Refreshing… (~2 min)';
             try {
-                var result = await firebase.functions().httpsCallable('refreshParcelSalesManual')();
+                // Client must wait as long as the function may run (300s); default is only 70s
+                var result = await firebase.functions().httpsCallable('refreshParcelSalesManual', { timeout: 300000 })();
                 var s = result.data;
                 alert('Done. Fetched ' + s.fetched + '/' + s.parcelCount + ' parcels, ' +
                     s.salesUpserted + ' sales records, ' + s.newSales + ' new.' +
