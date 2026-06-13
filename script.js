@@ -1381,6 +1381,17 @@ function initPhotos() {
         });
     }
 
+    // Upload immediately when images are chosen via the file picker (mirrors drag-drop).
+    // Reset the input afterward so re-selecting the same file fires change again.
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files && fileInput.files.length) {
+                runUpload(fileInput.files);
+                fileInput.value = '';
+            }
+        });
+    }
+
     if (dropzone) {
         ['dragenter', 'dragover'].forEach(function(evt) {
             dropzone.addEventListener(evt, function(e) {
