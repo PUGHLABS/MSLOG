@@ -88,6 +88,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Photos gallery - authenticated users can read, only admin can write (create/reorder/delete)
+    match /photos/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
     // For Sale listings - members can read, only admin can write
     match /listings/{docId} {
       allow read: if isAuth();

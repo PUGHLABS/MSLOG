@@ -27,6 +27,7 @@ Private community portal purpose-built for rural landowners on Mount Spokane, WA
 | **Document Library** | PDF uploads (10 MB max) and URL links, categorized: Bylaws, Minutes, Resources, Maps |
 | **Event Calendar** | Monthly grid view with upcoming event list; admin manages title, date, location, description |
 | **Video Library** | YouTube embeds organized by category (Tutorial, Event, Community, Safety) |
+| **Photo Gallery** | Admin-uploaded image gallery with drag-and-drop upload, drag-to-reorder, category filter (Events, Scenery, Wildlife, Community, Projects), and lightbox |
 | **Weather Widget** | Live conditions, 7-day forecast, and snow accumulation via Open-Meteo (no API key) |
 | **Live Weather Cam** | Dedicated camera view page for current mountain conditions |
 
@@ -75,6 +76,7 @@ Private community portal purpose-built for rural landowners on Mount Spokane, WA
 | Community Polls | `polls.html` | Member |
 | For Sale Listings | `forsale.html` | Member |
 | Videos | `videos.html` | Member |
+| Photos | `photos.html` | Member (upload/manage: Admin) |
 | Live Weather Cam | `weathercam.html` | Member |
 | Standards of Practice | `sop.html` | Member |
 | IEP Gate Code | `gatecode.html` | Admin |

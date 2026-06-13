@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact — MSLOG</title>
+    <title>Photos — MSLOG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="images/logo1.png">
@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
 </head>
 <body class="bg-[#f8fafc] min-h-screen flex flex-col">
@@ -80,37 +81,76 @@
 </nav>
 </header>
 
-<!-- ─── CONTACT FORM ─── -->
-<main class="flex-1 flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-md">
-        <div class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden">
+<!-- ─── MAIN ─── -->
+<main class="flex-1 px-4 py-8">
+    <div class="max-w-6xl mx-auto">
 
-            <!-- Header -->
-            <div class="page-header p-6 text-center">
-                <h1 class="text-white text-xl font-bold">Contact Form</h1>
-                <p class="text-[#94A1B0] text-xs mt-1">Administrator Jeff Pugh &middot; pughlabs@gmail.com</p>
-            </div>
+        <!-- Header -->
+        <div class="page-header rounded-xl p-6 mb-6">
+            <h1 class="text-white text-2xl font-bold">Photos</h1>
+            <p class="text-[#94A1B0] text-sm mt-1">Community photos — events, scenery, wildlife, and projects</p>
+        </div>
 
-            <!-- Form -->
-            <div class="p-6">
-                <form id="contact-form">
-                    <div class="mb-4">
-                        <label for="contact-name" class="block text-sm font-medium text-[#063559] mb-1">Your Name</label>
-                        <input type="text" id="contact-name" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="John Smith">
+        <!-- Admin: Add Photos -->
+        <div id="photo-add-form" class="admin-only bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
+            <h3 class="font-semibold text-[#063559] mb-3">Add Photos</h3>
+            <form id="add-photo-form" class="space-y-3">
+                <div class="grid md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Category</label>
+                        <select id="photo-category" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm">
+                            <option value="events">Events</option>
+                            <option value="scenery">Scenery</option>
+                            <option value="wildlife">Wildlife</option>
+                            <option value="community">Community</option>
+                            <option value="projects">Projects</option>
+                        </select>
                     </div>
-                    <div class="mb-4">
-                        <label for="contact-email" class="block text-sm font-medium text-[#063559] mb-1">Your Email</label>
-                        <input type="email" id="contact-email" required class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="your@email.com">
+                    <div>
+                        <label class="block text-xs font-medium text-[#7E8994] mb-1">Caption <span class="text-[#94A1B0]">(optional, applied to all)</span></label>
+                        <input type="text" id="photo-caption" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm" placeholder="e.g., Summer picnic 2026">
                     </div>
-                    <div class="mb-5">
-                        <label for="contact-message" class="block text-sm font-medium text-[#063559] mb-1">Message</label>
-                        <textarea id="contact-message" required rows="5" class="form-input w-full border border-[#94A1B0] rounded-lg px-3 py-2 text-sm resize-y" placeholder="Enter your message here"></textarea>
+                </div>
+                <div id="photo-dropzone" class="p-6 text-center cursor-pointer">
+                    <svg class="w-8 h-8 mx-auto mb-2 text-[#94A1B0]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    <p class="text-sm text-[#7E8994] mb-2">Drag &amp; drop images here, or</p>
+                    <label class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer inline-block">
+                        Choose Images
+                        <input type="file" id="photo-files" accept="image/*" multiple class="hidden">
+                    </label>
+                    <p class="text-[#94A1B0] text-xs mt-2">JPG, PNG, WEBP &middot; up to 10MB each</p>
+                </div>
+                <!-- Upload progress -->
+                <div id="upload-progress" class="hidden">
+                    <div class="w-full bg-[#e2e8f0] rounded-full h-2 overflow-hidden">
+                        <div id="upload-bar" class="bg-[#F9812A] h-2 rounded-full transition-all" style="width:0%"></div>
                     </div>
-                    <p id="contact-success" class="hidden text-green-600 text-xs bg-green-50 px-3 py-2 rounded mb-3">Message sent successfully! We'll get back to you soon.</p>
-                    <p id="contact-error" class="hidden text-red-600 text-xs bg-red-50 px-3 py-2 rounded mb-3"></p>
-                    <button type="submit" id="contact-submit" class="btn-primary w-full px-6 py-2.5 rounded-lg font-semibold text-sm">Send</button>
-                </form>
+                    <p id="upload-pct" class="text-[#7E8994] text-xs mt-1">Uploading...</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="submit" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold">Upload</button>
+                    <p id="photo-success" class="hidden text-green-600 text-xs"></p>
+                    <p id="photo-error" class="hidden text-red-600 text-xs"></p>
+                </div>
+                <p class="text-[#94A1B0] text-xs">Tip: drag photo tiles below to reorder the gallery.</p>
+            </form>
+        </div>
+
+        <!-- Category filter -->
+        <div id="photo-filter" class="bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4 mb-4">
+            <div class="flex flex-wrap gap-2">
+                <button class="cat-pill active" data-cat="all">All</button>
+                <button class="cat-pill" data-cat="events">Events</button>
+                <button class="cat-pill" data-cat="scenery">Scenery</button>
+                <button class="cat-pill" data-cat="wildlife">Wildlife</button>
+                <button class="cat-pill" data-cat="community">Community</button>
+                <button class="cat-pill" data-cat="projects">Projects</button>
             </div>
+        </div>
+
+        <!-- Photo Grid (loaded from Firestore) -->
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" id="photo-list">
+            <div class="col-span-full text-center py-8 text-[#94A1B0]">Loading photos...</div>
         </div>
     </div>
 </main>
@@ -129,52 +169,15 @@
     </div>
 </footer>
 
+<!-- Lightbox -->
+<div id="lightbox" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="Full size photo" class="max-h-[90vh] max-w-[90vw] rounded-lg shadow-xl">
+</div>
+
 <script src="script.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var form = document.getElementById('contact-form');
-    var nameInput = document.getElementById('contact-name');
-    var emailInput = document.getElementById('contact-email');
-    var msgInput = document.getElementById('contact-message');
-    var successEl = document.getElementById('contact-success');
-    var errorEl = document.getElementById('contact-error');
-    var submitBtn = document.getElementById('contact-submit');
-
-    // Pre-fill name and email if logged in
-    firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-            if (user.email && !emailInput.value) emailInput.value = user.email;
-            if (user.displayName && !nameInput.value) nameInput.value = user.displayName;
-        }
-    });
-
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        successEl.classList.add('hidden');
-        errorEl.classList.add('hidden');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
-
-        try {
-            await db.collection('contact_messages').add({
-                name: nameInput.value.trim(),
-                email: emailInput.value.trim(),
-                message: msgInput.value.trim(),
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                read: false
-            });
-            successEl.classList.remove('hidden');
-            form.reset();
-        } catch (err) {
-            errorEl.textContent = 'Failed to send message. Please try again.';
-            errorEl.classList.remove('hidden');
-            console.error('Contact form error:', err);
-        }
-
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send';
-    });
-});
-</script>
+<script>document.addEventListener('DOMContentLoaded', async function() {
+    await requireAuth();
+    loadPhotos(); // Reload photos now that auth state is known
+});</script>
 </body>
 </html>

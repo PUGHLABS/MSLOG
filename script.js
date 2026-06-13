@@ -1169,6 +1169,316 @@ function initVideoFilter() {
     });
 }
 
+// ─── Photos gallery (Firestore + Storage CRUD) ──────────────────
+var photoCategoryBadges = {
+    events: 'badge-admin',
+    scenery: 'badge-member',
+    wildlife: 'badge-new',
+    community: 'badge-pending',
+    projects: 'badge-member'
+};
+
+function renderPhotoItem(doc, isAdmin) {
+    var data = doc.data();
+    var cat = data.category || 'community';
+    var dateStr = data.createdAt ? data.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+    var label = cat.charAt(0).toUpperCase() + cat.slice(1);
+
+    var deleteBtn = isAdmin ?
+        '<button onclick="deletePhoto(\'' + doc.id + '\')" class="text-red-500 hover:text-red-700 text-xs font-semibold">Delete</button>' : '';
+
+    return '<div class="photo-item card-hover bg-white rounded-xl shadow-sm border border-[#e2e8f0] overflow-hidden"' +
+        (isAdmin ? ' draggable="true"' : '') +
+        ' data-cat="' + cat + '" data-id="' + doc.id + '">' +
+        '<div class="bg-[#1a1a2e] flex items-center justify-center" style="aspect-ratio:4/3;">' +
+        '<img src="' + escapeHtml(data.url) + '" data-url="' + escapeHtml(data.url) + '" ' +
+        'onclick="photoTileClick(this)" loading="lazy" ' +
+        'class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity" alt="' + escapeHtml(data.caption || 'Photo') + '">' +
+        '</div>' +
+        '<div class="p-4">' +
+        '<div class="flex flex-wrap items-center gap-2 mb-1">' +
+        (data.caption ? '<h3 class="font-semibold text-[#063559] text-sm">' + escapeHtml(data.caption) + '</h3>' : '') +
+        '<span class="badge ' + (photoCategoryBadges[cat] || 'badge-member') + '">' + label + '</span>' +
+        '</div>' +
+        '<div class="flex items-center justify-between mt-2">' +
+        '<span class="text-[#94A1B0] text-xs">' + (dateStr ? 'Added ' + dateStr : '') + '</span>' +
+        deleteBtn +
+        '</div></div></div>';
+}
+
+async function loadPhotos() {
+    var list = document.getElementById('photo-list');
+    if (!list) return;
+
+    try {
+        var snapshot = await db.collection('photos').orderBy('order', 'asc').get();
+        var admin = isAdmin();
+
+        if (snapshot.empty) {
+            list.innerHTML = '<div class="col-span-full text-center py-8 text-[#94A1B0]">No photos yet. Admins can add photos using the form above.</div>';
+            return;
+        }
+
+        var html = '';
+        snapshot.forEach(function(doc) {
+            html += renderPhotoItem(doc, admin);
+        });
+        list.innerHTML = html;
+
+        // Re-apply current filter
+        var activeFilter = document.querySelector('#photo-filter .cat-pill.active');
+        if (activeFilter) {
+            var cat = activeFilter.getAttribute('data-cat');
+            if (cat !== 'all') {
+                document.querySelectorAll('.photo-item').forEach(function(item) {
+                    item.style.display = item.getAttribute('data-cat') === cat ? 'block' : 'none';
+                });
+            }
+        }
+
+        if (admin) bindPhotoReorder();
+    } catch (e) {
+        console.error('Error loading photos:', e);
+        list.innerHTML = '<div class="col-span-full text-center py-8 text-red-500">Error loading photos. Please refresh the page.</div>';
+    }
+}
+
+// Click handler that ignores the click immediately following a drag-reorder
+var photoDragJustHappened = false;
+function photoTileClick(img) {
+    if (photoDragJustHappened) { photoDragJustHappened = false; return; }
+    openLightbox(img.dataset.url);
+}
+
+async function uploadPhotos(files, category, caption) {
+    if (!storage) throw new Error('Firebase Storage not available');
+
+    var progressEl = document.getElementById('upload-progress');
+    var barEl = document.getElementById('upload-bar');
+    var pctEl = document.getElementById('upload-pct');
+    if (progressEl) progressEl.classList.remove('hidden');
+
+    var added = 0;
+    var skipped = 0;
+    var baseOrder = Date.now();
+
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        if (!file.type || !file.type.startsWith('image/')) { skipped++; continue; }
+        if (file.size > 10 * 1024 * 1024) { skipped++; continue; }
+
+        var safeName = Date.now() + '_' + i + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        var path = 'photos/' + safeName;
+        var ref = storage.ref(path);
+        var uploadTask = ref.put(file, { contentType: file.type });
+
+        if (pctEl) pctEl.textContent = 'Uploading ' + (i + 1) + ' of ' + files.length + '...';
+        // eslint-disable-next-line no-loop-func
+        await new Promise(function(resolve, reject) {
+            uploadTask.on('state_changed',
+                function(snapshot) {
+                    var pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    if (barEl) barEl.style.width = pct + '%';
+                },
+                function(error) { reject(error); },
+                function() { resolve(); }
+            );
+        });
+
+        var downloadUrl = await ref.getDownloadURL();
+        await db.collection('photos').add({
+            url: downloadUrl,
+            storagePath: path,
+            fileName: file.name,
+            caption: caption || '',
+            category: category,
+            order: baseOrder + i,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: currentUser ? currentUser.uid : null
+        });
+        added++;
+    }
+
+    if (progressEl) progressEl.classList.add('hidden');
+    if (barEl) barEl.style.width = '0%';
+    return { added: added, skipped: skipped };
+}
+
+async function deletePhoto(photoId) {
+    if (!confirm('Are you sure you want to delete this photo?')) return;
+
+    try {
+        var ref = db.collection('photos').doc(photoId);
+        var snap = await ref.get();
+        if (snap.exists) {
+            var data = snap.data();
+            if (data.storagePath && storage) {
+                try {
+                    await storage.ref(data.storagePath).delete();
+                } catch (storageErr) {
+                    console.warn('Could not delete storage file:', storageErr);
+                }
+            }
+        }
+        await ref.delete();
+        var item = document.querySelector('.photo-item[data-id="' + photoId + '"]');
+        if (item) item.remove();
+    } catch (e) {
+        console.error('Error deleting photo:', e);
+        alert('Failed to delete photo. Please try again.');
+    }
+}
+
+function initPhotos() {
+    var list = document.getElementById('photo-list');
+    if (!list) return;
+
+    loadPhotos();
+
+    var form = document.getElementById('add-photo-form');
+    var dropzone = document.getElementById('photo-dropzone');
+    var fileInput = document.getElementById('photo-files');
+
+    function runUpload(files) {
+        var category = document.getElementById('photo-category').value;
+        var caption = document.getElementById('photo-caption').value.trim();
+        var success = document.getElementById('photo-success');
+        var error = document.getElementById('photo-error');
+        if (success) success.classList.add('hidden');
+        if (error) error.classList.add('hidden');
+
+        if (!files || !files.length) {
+            if (error) { error.textContent = 'Please choose at least one image.'; error.classList.remove('hidden'); }
+            return;
+        }
+
+        uploadPhotos(files, category, caption).then(function(result) {
+            if (result.added > 0) {
+                if (success) {
+                    success.textContent = 'Added ' + result.added + ' photo' + (result.added !== 1 ? 's' : '') +
+                        (result.skipped ? ' (' + result.skipped + ' skipped — not an image or over 10MB)' : '') + '.';
+                    success.classList.remove('hidden');
+                    setTimeout(function() { success.classList.add('hidden'); }, 4000);
+                }
+                if (document.getElementById('photo-caption')) document.getElementById('photo-caption').value = '';
+                loadPhotos();
+            } else if (error) {
+                error.textContent = 'No photos added. Files must be images under 10MB.';
+                error.classList.remove('hidden');
+            }
+        }).catch(function(e) {
+            console.error('Upload failed:', e);
+            if (error) { error.textContent = 'Upload failed: ' + e.message; error.classList.remove('hidden'); }
+            var progressEl = document.getElementById('upload-progress');
+            if (progressEl) progressEl.classList.add('hidden');
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            runUpload(fileInput ? fileInput.files : null);
+        });
+    }
+
+    if (dropzone) {
+        ['dragenter', 'dragover'].forEach(function(evt) {
+            dropzone.addEventListener(evt, function(e) {
+                e.preventDefault();
+                dropzone.classList.add('dropzone-active');
+            });
+        });
+        ['dragleave', 'drop'].forEach(function(evt) {
+            dropzone.addEventListener(evt, function(e) {
+                e.preventDefault();
+                dropzone.classList.remove('dropzone-active');
+            });
+        });
+        dropzone.addEventListener('drop', function(e) {
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                runUpload(e.dataTransfer.files);
+            }
+        });
+    }
+}
+
+// ─── Photos: drag-to-reorder (admin) ─────────────────────────────
+var photoDragSrc = null;
+
+function bindPhotoReorder() {
+    var list = document.getElementById('photo-list');
+    if (!list) return;
+
+    list.querySelectorAll('.photo-item').forEach(function(tile) {
+        tile.addEventListener('dragstart', function(e) {
+            photoDragSrc = tile;
+            tile.classList.add('opacity-50');
+            if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+        });
+        tile.addEventListener('dragend', function() {
+            tile.classList.remove('opacity-50');
+        });
+        tile.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        });
+        tile.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!photoDragSrc || photoDragSrc === tile) return;
+            // Insert source before or after target based on position
+            var rect = tile.getBoundingClientRect();
+            var after = (e.clientY - rect.top) > rect.height / 2;
+            list.insertBefore(photoDragSrc, after ? tile.nextSibling : tile);
+            photoDragJustHappened = true;
+            persistPhotoOrder();
+        });
+    });
+}
+
+async function persistPhotoOrder() {
+    var tiles = document.querySelectorAll('#photo-list .photo-item');
+    if (!tiles.length) return;
+    try {
+        var batch = db.batch();
+        tiles.forEach(function(tile, idx) {
+            batch.update(db.collection('photos').doc(tile.getAttribute('data-id')), { order: idx });
+        });
+        await batch.commit();
+    } catch (e) {
+        console.error('Error saving photo order:', e);
+        alert('Could not save the new photo order. Please try again.');
+        loadPhotos();
+    }
+}
+
+// Reorder binding happens inside loadPhotos() once tiles exist; this is a no-op placeholder
+function initPhotoReorder() { /* binding occurs in loadPhotos via bindPhotoReorder() */ }
+
+// ─── Photos category filter ──────────────────────────────────────
+function initPhotoFilter() {
+    var container = document.getElementById('photo-filter');
+    if (!container) return;
+    var pills = container.querySelectorAll('.cat-pill');
+    if (!pills.length) return;
+
+    pills.forEach(function(pill) {
+        pill.addEventListener('click', function() {
+            pills.forEach(function(p) { p.classList.remove('active'); });
+            this.classList.add('active');
+
+            var cat = this.getAttribute('data-cat');
+            document.querySelectorAll('.photo-item').forEach(function(item) {
+                if (cat === 'all' || item.getAttribute('data-cat') === cat) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+}
+
 // ─── Calendar Events (Firestore CRUD) ────────────────────────────
 var calendarEvents = {}; // Cache events by date key (YYYY-MM-DD)
 
@@ -2140,6 +2450,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initDocFilter();
     initVideos();
     initVideoFilter();
+    initPhotos();
+    initPhotoFilter();
     initEvents();
     initForum();
     initGateCode();

@@ -307,6 +307,26 @@ html {
     background-color: #cbd5e1;
 }
 
+/* Photo upload drop zone */
+#photo-dropzone {
+    border: 2px dashed #94A1B0;
+    border-radius: 10px;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+#photo-dropzone.dropzone-active {
+    border-color: #F9812A;
+    background-color: #fff7ed;
+}
+
+.photo-item[draggable="true"] {
+    cursor: grab;
+}
+
+.photo-item.opacity-50 {
+    opacity: 0.5;
+}
+
 /* ─── Forum rich text editor ────────────────────────────────── */
 .forum-editor .ql-toolbar {
     border: 1px solid #94A1B0;

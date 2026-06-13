@@ -33,7 +33,7 @@ Mount Spokane Land Owners Group community portal. Vanilla HTML/JS/CSS + Firebase
 | `netlify.toml` | Netlify hosting + cache config |
 | `!FSD.md` | Full functional specification (source of truth) |
 
-Pages: `index.html`, `login.html`, `dashboard.html`, `directory.html`, `documents.html`, `calendar.html`, `forum.html`, `polls.html`, `gatecode.html`, `videos.html`, `forsale.html`, `weathercam.html`, `contact.html`, `admin.html`, `sop.html`, `pending.html`
+Pages: `index.html`, `login.html`, `dashboard.html`, `directory.html`, `documents.html`, `calendar.html`, `forum.html`, `polls.html`, `gatecode.html`, `videos.html`, `photos.html`, `forsale.html`, `weathercam.html`, `contact.html`, `admin.html`, `sop.html`, `pending.html`
 
 ---
 
