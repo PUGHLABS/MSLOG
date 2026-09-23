@@ -556,3 +556,29 @@ exports.refreshParcelSalesManual = functions
         await handleSalesRefreshResult(summary);
         return { ...summary, newSales: summary.newSales.length };
     });
+
+// ─── Burn restriction status (Spokane Clean Air) ─────────────────
+
+const { runBurnStatusRefresh, SOURCE_URL: BURN_SOURCE_URL } = require('./burnStatus');
+
+/**
+ * Hourly scrape of Spokane Clean Air's burn status into public_status/burn.
+ * Posts to Discord when the status changes.
+ */
+exports.refreshBurnStatus = functions
+    .runWith({ timeoutSeconds: 60, memory: '128MB' })
+    .pubsub.schedule('every 60 minutes')
+    .timeZone('America/Los_Angeles')
+    .onRun(async () => {
+        const result = await runBurnStatusRefresh(admin.firestore());
+        if (result.changed && result.prev) {
+            await sendDiscord({
+                title: '🔥 Burn Restriction Status Changed',
+                description: `**${result.prev.label}** → **${result.next.label}**` +
+                    (result.next.teaser ? `\n${result.next.teaser}` : '') +
+                    `\n${BURN_SOURCE_URL}`,
+                color: result.next.statusClass === 'in-effect' ? 0xDC2626 : 0x16A34A
+            });
+        }
+        return null;
+    });

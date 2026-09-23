@@ -97,6 +97,12 @@ County-recorded sales: `functions/parcelSales.js` scrapes Spokane County SCOUT w
 
 ---
 
+## Burn Restriction Status
+
+`functions/burnStatus.js` scrapes the "Current Status" widget (`.aq-burnstatus status-*`, `.aq-label`, `.aq-burnstatus-teaser`) from https://spokanecleanair.org/burning/burn-restrictions/ hourly (scheduled function `refreshBurnStatus`) into `public_status/burn` (public read, no client writes). If the scrape fails, the last good status is kept and only `error`/`checkedAt` update. Status changes post to Discord. Client: `initBurnStatus()` in `script.js` fills the red "Burn Restrictions" pill injected by `injectBurnNavButtons()` (top of every page's menu) and `#burn-status-card` on `index.html`. Data older than 6h shows as "unavailable" (amber). SCA has no API or CORS, so the status must go through the function.
+
+---
+
 ## UI Conventions
 
 - Admin-only elements: add class `admin-only` (CSS-hidden); `initNav()` strips it for admins after auth resolves

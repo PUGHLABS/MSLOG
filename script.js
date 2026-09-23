@@ -178,6 +178,8 @@ function initNav() {
         }
     }
 
+    injectBurnNavButtons();
+
     // Highlight current page link
     var page = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.nav-link[href]').forEach(function(a) {
@@ -319,6 +321,83 @@ function initLoginForm() {
             setTimeout(function() { err.classList.add('hidden'); }, 4000);
         }
     });
+}
+
+// ─── Burn Restriction Status (Spokane Clean Air) ─────────────────
+// public_status/burn is written hourly by the refreshBurnStatus Cloud Function.
+var BURN_URL = 'https://spokanecleanair.org/burning/burn-restrictions/';
+var BURN_STALE_MS = 6 * 60 * 60 * 1000;
+var burnStatus = null; // { level: 'red'|'green'|'amber', label, teaser, checkedAt }
+
+// Red "Burn Restrictions" button at the top of the desktop dropdown and mobile menu.
+function injectBurnNavButtons() {
+    var targets = [
+        { id: 'burn-nav-desktop', parent: document.getElementById('desktop-nav-panel'), cls: 'mx-2 my-1' },
+        { id: 'burn-nav-mobile', parent: document.querySelector('#mobile-menu > div'), cls: 'mb-2' }
+    ];
+    targets.forEach(function(t) {
+        if (!t.parent || document.getElementById(t.id)) return;
+        var a = document.createElement('a');
+        a.id = t.id;
+        a.href = BURN_URL;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.title = 'Spokane Clean Air — current burn restrictions';
+        a.className = 'burn-pill flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-sm px-3 py-2 rounded transition-colors whitespace-nowrap ' + t.cls;
+        a.innerHTML = '<span aria-hidden="true">🔥</span><span>Burn Restrictions</span><span class="burn-nav-status font-normal opacity-90"></span>';
+        t.parent.insertBefore(a, t.parent.firstChild);
+    });
+    renderBurnNavStatus();
+}
+
+function renderBurnNavStatus() {
+    document.querySelectorAll('.burn-nav-status').forEach(function(el) {
+        el.textContent = burnStatus ? '· ' + (burnStatus.level === 'amber' && !burnStatus.label ? 'Check status' : burnStatus.label) : '';
+    });
+}
+
+function classifyBurnStatus(d) {
+    var checkedAt = d && d.checkedAt && d.checkedAt.toDate ? d.checkedAt.toDate() : null;
+    if (!d || !d.label || !checkedAt || Date.now() - checkedAt.getTime() > BURN_STALE_MS) {
+        return { level: 'amber', label: '', teaser: '', checkedAt: checkedAt };
+    }
+    var level = 'amber';
+    if (d.statusClass === 'in-effect' || /in effect|stage|ban/i.test(d.label)) level = 'red';
+    else if (/no restriction|lifted|none/i.test(d.label)) level = 'green';
+    return { level: level, label: d.label, teaser: d.teaser || '', checkedAt: checkedAt };
+}
+
+function renderBurnCard() {
+    var el = document.getElementById('burn-status-card');
+    if (!el || !burnStatus) return;
+    var icon = { red: '🔥', green: '✅', amber: '⚠️' }[burnStatus.level];
+    var headline = burnStatus.label
+        ? 'Burn Restrictions: <strong>' + escapeHtml(burnStatus.label) + '</strong>'
+        : 'Burn status unavailable — check Spokane Clean Air';
+    var checked = burnStatus.label && burnStatus.checkedAt
+        ? ' · Last checked ' + burnStatus.checkedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        : '';
+    el.innerHTML =
+        '<a href="' + BURN_URL + '" target="_blank" rel="noopener" class="burn-card burn-' + burnStatus.level + ' block rounded-xl px-4 py-3 text-left text-white shadow-lg">' +
+            '<div class="flex items-center gap-2 text-sm md:text-base"><span aria-hidden="true">' + icon + '</span><span>' + headline + '</span></div>' +
+            (burnStatus.teaser ? '<p class="text-xs md:text-sm text-white/90 mt-1">' + escapeHtml(burnStatus.teaser) + '</p>' : '') +
+            '<p class="text-xs text-white/80 mt-1.5">Live status from Spokane Clean Air — checked hourly' + checked + '</p>' +
+            '<p class="text-xs mt-1"><span class="text-white font-semibold underline">View details ↗</span></p>' +
+        '</a>';
+}
+
+function initBurnStatus() {
+    if (typeof db === 'undefined') return;
+    db.collection('public_status').doc('burn').get()
+        .then(function(doc) { burnStatus = classifyBurnStatus(doc.exists ? doc.data() : null); })
+        .catch(function(err) {
+            console.error('Burn status fetch error:', err);
+            burnStatus = classifyBurnStatus(null);
+        })
+        .then(function() {
+            renderBurnNavStatus();
+            renderBurnCard();
+        });
 }
 
 // ─── Weather Widget (Live data from Open-Meteo API) ─────────────────────
@@ -2453,6 +2532,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initRegForm();
     initLoginForm();
     initWeather();
+    initBurnStatus();
     initCalendar();
     initSearch();
     initDirToggle();

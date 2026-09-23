@@ -76,6 +76,12 @@ service cloud.firestore {
       allow create: if isAuth();
     }
 
+    // Public status (burn restrictions) - anyone can read, written only by Cloud Functions
+    match /public_status/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Documents - authenticated users can read, only admin can write
     match /documents/{docId} {
       allow read: if isAuth();

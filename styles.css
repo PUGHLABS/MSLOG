@@ -278,6 +278,37 @@ html {
     margin-top: 0.25rem;
 }
 
+/* Burn restrictions: red nav pill + front-page status card */
+#desktop-nav-panel a.burn-pill {
+    flex-direction: row !important;
+    align-items: center !important;
+}
+
+.burn-card {
+    background-color: #b45309; /* amber: unknown / stale */
+    transition: background-color 0.2s;
+}
+
+.burn-card:hover {
+    background-color: #92400e;
+}
+
+.burn-card.burn-red {
+    background-color: #b91c1c;
+}
+
+.burn-card.burn-red:hover {
+    background-color: #991b1b;
+}
+
+.burn-card.burn-green {
+    background-color: #15803d;
+}
+
+.burn-card.burn-green:hover {
+    background-color: #166534;
+}
+
 /* Category filter pills */
 .cat-pill,
 .vid-pill {
