@@ -395,6 +395,56 @@ exports.notifyNewThread = functions.firestore
         return null;
     });
 
+/** Escapes text for safe inclusion in email HTML. */
+function escHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/**
+ * New forum reply: posts to Discord and emails the thread author
+ * (unless they replied to their own thread or opted out of forum notifications).
+ */
+exports.notifyNewReply = functions.firestore
+    .document('threads/{threadId}/replies/{replyId}')
+    .onCreate(async (snap, context) => {
+        const reply = snap.data();
+        const threadSnap = await admin.firestore().collection('threads').doc(context.params.threadId).get();
+        if (!threadSnap.exists) return null;
+        const thread = threadSnap.data();
+
+        await sendDiscord({
+            title: 'New Forum Reply',
+            color: 0xF9812A,
+            fields: [
+                { name: 'Thread', value: thread.title || 'Untitled', inline: false },
+                { name: 'Reply by', value: reply.authorName || 'A member', inline: true },
+                { name: 'Thread author', value: thread.authorName || 'Unknown', inline: true }
+            ],
+            footer: { text: 'MSLOG Forum' },
+            timestamp: new Date().toISOString(),
+            url: 'https://mtspokanelandgroup.org/forum.html'
+        });
+
+        if (!thread.authorId || thread.authorId === reply.authorId) return null;
+        const authorSnap = await admin.firestore().collection('members').doc(thread.authorId).get();
+        if (!authorSnap.exists) return null;
+        const author = authorSnap.data();
+        const topics = author.notifications && author.notifications.topics;
+        if (!author.email || author.status !== 'approved' || (topics && topics.forum === false)) return null;
+
+        await sendToEmails([author.email], `New reply to your discussion: ${thread.title}`,
+            `<h2 style="color:#063559;margin-top:0;">${escHtml(reply.authorName || 'A member')} replied to your discussion</h2>
+             <p style="color:#7E8994;font-size:13px;">${escHtml(thread.title)}</p>
+             <div style="text-align:center;margin:24px 0;">
+                 <a href="https://mtspokanelandgroup.org/forum.html"
+                    style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
+                     View Reply
+                 </a>
+             </div>`
+        );
+        return null;
+    });
+
 exports.notifyNewPoll = functions.firestore
     .document('polls/{pollId}')
     .onCreate(async (snap) => {

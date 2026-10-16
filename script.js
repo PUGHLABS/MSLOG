@@ -343,7 +343,7 @@ function injectBurnNavButtons() {
         a.target = '_blank';
         a.rel = 'noopener';
         a.title = 'Spokane Clean Air — current burn restrictions';
-        a.className = 'burn-pill flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold text-sm px-3 py-2 rounded transition-colors whitespace-nowrap ' + t.cls;
+        a.className = 'burn-pill burn-red flex items-center justify-center gap-1.5 text-white font-semibold text-sm px-3 py-2 rounded transition-colors whitespace-nowrap ' + t.cls;
         a.innerHTML = '<span aria-hidden="true">🔥</span><span>Burn Restrictions</span><span class="burn-nav-status font-normal opacity-90"></span>';
         t.parent.insertBefore(a, t.parent.firstChild);
     });
@@ -351,6 +351,10 @@ function injectBurnNavButtons() {
 }
 
 function renderBurnNavStatus() {
+    document.querySelectorAll('.burn-pill').forEach(function(a) {
+        a.classList.remove('burn-red', 'burn-green', 'burn-amber');
+        a.classList.add('burn-' + (burnStatus ? burnStatus.level : 'red'));
+    });
     document.querySelectorAll('.burn-nav-status').forEach(function(el) {
         el.textContent = burnStatus ? '· ' + (burnStatus.level === 'amber' && !burnStatus.label ? 'Check status' : burnStatus.label) : '';
     });
@@ -362,8 +366,9 @@ function classifyBurnStatus(d) {
         return { level: 'amber', label: '', teaser: '', checkedAt: checkedAt };
     }
     var level = 'amber';
-    if (d.statusClass === 'in-effect' || /in effect|stage|ban/i.test(d.label)) level = 'red';
-    else if (/no restriction|lifted|none/i.test(d.label)) level = 'green';
+    var notInEffect = /^not[-\s]in[-\s]effect$|no restriction|lifted|none/i;
+    if (notInEffect.test(d.statusClass || '') || notInEffect.test(d.label)) level = 'green';
+    else if (d.statusClass === 'in-effect' || /in effect|stage|ban/i.test(d.label)) level = 'red';
     return { level: level, label: d.label, teaser: d.teaser || '', checkedAt: checkedAt };
 }
 
@@ -1971,13 +1976,13 @@ async function loadReplies(threadId) {
         var snap = await db.collection('threads').doc(threadId).collection('replies').orderBy('createdAt', 'asc').get();
         var html = '<div class="space-y-2 mb-3">';
         if (snap.empty) {
-            html += '<p class="text-xs text-[#94A1B0]">No replies yet — be the first!</p>';
+            html += '<p class="text-xs text-[#475569]">No replies yet — be the first!</p>';
         } else {
             snap.forEach(function(d) {
                 var rd = d.data();
                 var ds = rd.createdAt ? rd.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
-                html += '<div class="bg-[#f8fafc] rounded-lg p-3 border-l-2 border-[#F9812A]">' +
-                    '<p class="text-xs text-[#94A1B0] mb-1 font-medium">' + escapeHtml(rd.authorName || 'Unknown') + ' &mdash; ' + ds + '</p>' +
+                html += '<div class="bg-[#fff4e8] rounded-lg p-3 border-l-2 border-[#F9812A]">' +
+                    '<p class="text-xs text-[#475569] mb-1 font-medium">' + escapeHtml(rd.authorName || 'Unknown') + ' &mdash; ' + ds + '</p>' +
                     '<div class="forum-body text-sm text-[#334155]">' + sanitizeHtml(rd.body || '') + '</div>' +
                     '</div>';
             });

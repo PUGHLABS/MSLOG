@@ -302,12 +302,21 @@ html {
 }
 
 .burn-card.burn-green {
-    background-color: #15803d;
+    background-color: #228B22; /* forest green */
 }
 
 .burn-card.burn-green:hover {
-    background-color: #166534;
+    background-color: #1a6b1a;
 }
+
+/* Nav pill follows the same levels */
+a.burn-pill { transition: background-color 0.2s; }
+a.burn-pill.burn-red { background-color: #dc2626; }
+a.burn-pill.burn-red:hover { background-color: #b91c1c; }
+a.burn-pill.burn-amber { background-color: #b45309; }
+a.burn-pill.burn-amber:hover { background-color: #92400e; }
+a.burn-pill.burn-green { background-color: #228B22; }
+a.burn-pill.burn-green:hover { background-color: #1a6b1a; }
 
 /* Category filter pills */
 .cat-pill,
