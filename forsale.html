@@ -192,6 +192,7 @@
                 <button data-filter="active" class="filter-btn active-filter px-3 py-1.5 rounded-full text-xs font-semibold border border-[#063559] bg-[#063559] text-white transition-colors">Active</button>
                 <button data-filter="all" class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold border border-[#e2e8f0] text-[#7E8994] hover:border-[#063559] hover:text-[#063559] transition-colors">All (incl. Sold)</button>
                 <button data-filter="sales" class="admin-only filter-btn px-3 py-1.5 rounded-full text-xs font-semibold border border-[#e2e8f0] text-[#7E8994] hover:border-[#063559] hover:text-[#063559] transition-colors">Sales (Last Year)</button>
+                <button data-filter="sales-ytd" class="admin-only filter-btn px-3 py-1.5 rounded-full text-xs font-semibold border border-[#e2e8f0] text-[#7E8994] hover:border-[#063559] hover:text-[#063559] transition-colors">Sales (This Year)</button>
             </div>
             <button id="btn-refresh-sales" class="hidden text-xs text-[#7E8994] hover:text-[#063559] underline self-center">Refresh sales data</button>
             <div class="sm:ml-auto">
@@ -376,6 +377,10 @@
         } catch(e) { salesMeta = null; }
     }
 
+    function isSalesFilter() {
+        return currentFilter === 'sales' || currentFilter === 'sales-ytd';
+    }
+
     async function renderSales() {
         var grid = document.getElementById('listings-grid');
         var count = document.getElementById('listings-count');
@@ -389,22 +394,29 @@
                 grid.innerHTML = '<div class="text-center py-12 text-red-500 col-span-full">Error loading sales data.</div>';
                 return;
             }
-            if (currentFilter !== 'sales') return; // user switched away while loading
+            if (!isSalesFilter()) return; // user switched away while loading
         }
 
-        if (allSales.length === 0) {
-            grid.innerHTML = '<div class="text-center py-12 text-[#94A1B0] col-span-full">No recorded sales in the last year.</div>';
+        var ytd = currentFilter === 'sales-ytd';
+        var sales = allSales;
+        if (ytd) {
+            var yearStart = new Date().getFullYear() + '-01-01';
+            sales = allSales.filter(function(s) { return s.saleDate >= yearStart; });
+        }
+
+        if (sales.length === 0) {
+            grid.innerHTML = '<div class="text-center py-12 text-[#94A1B0] col-span-full">No recorded sales ' + (ytd ? 'this year' : 'in the last year') + '.</div>';
         } else {
-            grid.innerHTML = allSales.map(buildSaleCard).join('');
+            grid.innerHTML = sales.map(buildSaleCard).join('');
         }
 
-        var note = allSales.length + ' sale' + (allSales.length !== 1 ? 's' : '') + ' · Source: Spokane County SCOUT';
+        var note = sales.length + ' sale' + (sales.length !== 1 ? 's' : '') + ' · Source: Spokane County SCOUT';
         if (salesMeta && salesMeta.lastRun) note += ' · updated ' + fmtDate(salesMeta.lastRun);
         count.textContent = note;
     }
 
     function renderListings() {
-        if (currentFilter === 'sales') { renderSales(); return; }
+        if (isSalesFilter()) { renderSales(); return; }
 
         var grid = document.getElementById('listings-grid');
         var count = document.getElementById('listings-count');
@@ -604,7 +616,7 @@
                 btn.classList.add('active-filter', 'bg-[#063559]', 'text-white', 'border-[#063559]');
                 btn.classList.remove('border-[#e2e8f0]', 'text-[#7E8994]');
                 currentFilter = btn.dataset.filter;
-                document.getElementById('sort-select').classList.toggle('hidden', currentFilter === 'sales');
+                document.getElementById('sort-select').classList.toggle('hidden', isSalesFilter());
                 renderListings();
             });
         });
@@ -624,7 +636,7 @@
                     (s.blocked403 ? '\n⚠ ' + s.blocked403 + ' requests blocked (403) by the county.' : '') +
                     (s.lastError ? '\nLast error: ' + s.lastError : ''));
                 allSales = null; // force reload on next view
-                if (currentFilter === 'sales') renderListings();
+                if (isSalesFilter()) renderListings();
             } catch(e) {
                 alert('Refresh failed: ' + e.message);
             } finally {
