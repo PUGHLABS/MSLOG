@@ -24,7 +24,7 @@ function getResend() {
 /**
  * Sends a Discord webhook message with an embed.
  */
-async function sendDiscord(embed) {
+async function sendDiscord(embed, content) {
     if (!DISCORD_WEBHOOK) {
         console.error('DISCORD_WEBHOOK_URL not configured in .env file');
         return false;
@@ -33,7 +33,7 @@ async function sendDiscord(embed) {
         const response = await fetch(DISCORD_WEBHOOK, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ embeds: [embed] })
+            body: JSON.stringify({ content, embeds: [embed] })
         });
         if (!response.ok) {
             throw new Error(`Discord responded with ${response.status}`);
@@ -89,6 +89,10 @@ function emailWrapper(bodyHtml) {
             <p style="color:#94A1B0;margin:0;font-size:12px;">Mount Spokane Land Owners Group &bull; Mount Spokane, WA</p>
         </div>
     </div>`;
+}
+
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 /** Returns emails of all approved admins. */
@@ -173,8 +177,19 @@ exports.notifyNewMember = functions.firestore
             ],
             footer: { text: 'MSLOG Admin Notification' },
             timestamp: new Date().toISOString(),
-            url: 'https://pughlabs.github.io/MSLOG/admin.html'
-        });
+            url: 'https://mtspokanelandgroup.org/admin.html'
+        }, '@everyone New member registration awaiting approval'); // mention triggers a phone push
+
+        const adminEmails = await getAdminEmails();
+        await sendToEmails(adminEmails, 'New MSLOG Registration Awaiting Approval', `
+            <h2 style="color:#063559;">New Member Registration</h2>
+            <p style="color:#333;line-height:1.6;">A new member is waiting for approval:</p>
+            <ul style="color:#333;line-height:1.8;">
+                <li><strong>Name:</strong> ${escapeHtml(member.name || 'Unknown')}</li>
+                <li><strong>Email:</strong> ${escapeHtml(member.email || 'N/A')}</li>
+                <li><strong>Lot:</strong> ${escapeHtml(member.lot || 'N/A')}</li>
+            </ul>
+            <p><a href="https://mtspokanelandgroup.org/admin.html" style="background:#F9812A;color:white;padding:10px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">Review in Admin</a></p>`);
 
         return { success: true };
     });
@@ -232,7 +247,7 @@ exports.sendApprovalEmail = functions.firestore
                                 </div>
 
                                 <div style="text-align: center; margin: 30px 0;">
-                                    <a href="https://pughlabs.github.io/MSLOG/login.html"
+                                    <a href="https://mtspokanelandgroup.org/login.html"
                                        style="background-color: #F9812A; color: white; padding: 12px 30px;
                                               text-decoration: none; border-radius: 6px; font-weight: bold;">
                                         Login to MSLOG
